@@ -1,0 +1,740 @@
+/* body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fff8f6;
+    color: #2f2f2f;
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.wedding-navbar {
+    background-color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(12px);
+}
+
+.logo {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #d58a94;
+}
+
+.navbar .nav-link {
+    margin: 0 0.65rem;
+    font-weight: 500;
+    color: #444;
+    transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+    color: #d58a94;
+}
+
+.menu-actions {
+    padding-top: 0.75rem;
+}
+
+.btn-main,
+.btn-demo,
+.btn-login {
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-weight: 600;
+}
+
+.btn-main {
+    background-color: #d58a94;
+    color: #fff;
+    border: 1px solid #d58a94;
+}
+
+.btn-main:hover {
+    background-color: #c86f7b;
+    border-color: #c86f7b;
+    color: #fff;
+}
+
+.btn-demo {
+    color: #d58a94;
+    border: 2px solid #d58a94;
+    background-color: transparent;
+}
+
+.btn-demo:hover {
+    background-color: #d58a94;
+    color: #fff;
+}
+
+.btn-login {
+    background-color: #fff;
+    border: 1px solid rgba(213, 138, 148, 0.25);
+    color: #d58a94;
+}
+
+.btn-login:hover {
+    background-color: #fff3f5;
+    color: #c86f7b;
+}
+
+.hero-section {
+    padding: 5.5rem 0 4.5rem;
+}
+
+.hero-badge,
+.section-subtitle {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background-color: #ffe8ec;
+    color: #c86f7b;
+    font-size: 0.92rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.hero-title {
+    font-size: 3.4rem;
+    line-height: 1.25;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
+.hero-title span {
+    color: #d58a94;
+}
+
+.hero-text,
+.section-text,
+.footer-text,
+.feature-card p {
+    color: #666;
+    line-height: 1.9;
+    font-size: 1rem;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin: 2rem 0;
+}
+
+.hero-highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.highlight-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    background-color: #fff;
+    padding: 0.8rem 1rem;
+    border-radius: 999px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    color: #555;
+    font-weight: 500;
+}
+
+.highlight-item i,
+.feature-icon {
+    color: #d58a94;
+}
+
+.phone-mockup {
+    background-color: #fff;
+    border-radius: 2rem;
+    padding: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.phone-mockup img {
+    border-radius: 1.5rem;
+    width: 100%;
+    min-height: 420px;
+    object-fit: cover;
+}
+
+.section-block {
+    padding: 5.5rem 0;
+}
+
+.section-soft {
+    background-color: #fff3f1;
+}
+
+.section-heading {
+    max-width: 720px;
+    margin: 0 auto 3.5rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.35rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.feature-card,
+.template-card,
+.demo-box {
+    background-color: #fff;
+    border-radius: 1.25rem;
+    height: 100%;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
+.feature-card {
+    padding: 2rem 1.5rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff3f5;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.feature-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.9rem;
+}
+
+.template-card {
+    padding: 1rem;
+}
+
+.template-card img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 1rem;
+}
+
+.demo-box {
+    padding: 2.5rem;
+}
+
+.site-footer {
+    background-color: #2f2a2b;
+    color: #fff;
+    padding: 4.5rem 0;
+    margin-top: 2rem;
+}
+
+.footer-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.footer-title {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li + li {
+    margin-top: 0.75rem;
+}
+
+.footer-links a,
+.footer-text {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.footer-links a:hover {
+    color: #fff;
+}
+
+@media (min-width: 992px) {
+    .menu-actions {
+        padding-top: 0;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .navbar .nav-link {
+        margin: 0;
+        padding: 0.75rem 0;
+    }
+
+    .menu-actions {
+        flex-direction: column;
+        align-items: stretch !important;
+        margin-top: 1rem;
+    }
+
+    .btn-login,
+    .btn-main {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-section {
+        padding-top: 4rem;
+    }
+
+    .hero-title {
+        font-size: 2.7rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .section-title {
+        font-size: 1.85rem;
+    }
+
+    .phone-mockup img,
+    .template-card img {
+        min-height: auto;
+        height: 260px;
+    }
+
+    .demo-box {
+        padding: 1.75rem;
+    }
+}
+ /* nút xem tất cả mẫu */
+/* .btn-template-all {
+    background-color: #d48888;
+    color: #fff;
+    border: none;
+}
+
+/* =========================
+   Global
+========================= */
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fff8f6;
+    color: #2f2f2f;
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* =========================
+   Navbar
+========================= */
+
+.wedding-navbar {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.logo {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #d58a94;
+}
+
+.navbar .nav-link {
+    margin: 0 0.65rem;
+    font-weight: 500;
+    color: #444;
+    transition: color .2s ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+    color: #d58a94;
+}
+
+.menu-actions {
+    padding-top: .75rem;
+}
+
+/* =========================
+   Buttons
+========================= */
+
+.btn-main,
+.btn-demo,
+.btn-login,
+.btn-template-all {
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.btn-main,
+.btn-demo,
+.btn-login {
+    padding: .85rem 1.6rem;
+}
+
+.btn-main {
+    background-color: #d58a94;
+    color: #fff;
+    border: 1px solid #d58a94;
+}
+
+.btn-main:hover {
+    background-color: #c86f7b;
+    border-color: #c86f7b;
+    color: #fff;
+}
+
+.btn-demo {
+    background: transparent;
+    color: #d58a94;
+    border: 2px solid #d58a94;
+}
+
+.btn-demo:hover {
+    background: #d58a94;
+    color: #fff;
+}
+
+.btn-login {
+    background: #fff;
+    color: #d58a94;
+    border: 1px solid rgba(213,138,148,.25);
+}
+
+.btn-login:hover {
+    background: #fff3f5;
+    color: #c86f7b;
+}
+
+/* Nút xem tất cả mẫu */
+
+.btn-template-all {
+    background-color: #d48888;
+    color: #fff;
+    padding: .75rem 1.75rem;
+    border: none;
+}
+
+.btn-template-all:hover {
+    background-color: #bf7474;
+    color: #fff;
+}
+
+/* =========================
+   Hero
+========================= */
+
+.hero-section {
+    padding: 5.5rem 0 4.5rem;
+}
+
+.hero-badge,
+.section-subtitle {
+    display: inline-block;
+    padding: .45rem .9rem;
+    margin-bottom: 1rem;
+    border-radius: 999px;
+    background: #ffe8ec;
+    color: #c86f7b;
+    font-size: .92rem;
+    font-weight: 600;
+}
+
+.hero-title {
+    font-size: 3.4rem;
+    line-height: 1.25;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
+.hero-title span {
+    color: #d58a94;
+}
+
+.hero-text,
+.section-text,
+.footer-text,
+.feature-card p {
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.9;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .85rem;
+    margin: 2rem 0;
+}
+
+.hero-highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.highlight-item {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .8rem 1rem;
+    background: #fff;
+    border-radius: 999px;
+    box-shadow: 0 10px 20px rgba(0,0,0,.05);
+    color: #555;
+    font-weight: 500;
+}
+
+.highlight-item i,
+.feature-icon {
+    color: #d58a94;
+}
+
+/* =========================
+   Phone Mockup
+========================= */
+
+.phone-mockup {
+    background: #fff;
+    border-radius: 2rem;
+    padding: 1rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,.12);
+}
+
+.phone-mockup img {
+    width: 100%;
+    min-height: 420px;
+    object-fit: cover;
+    border-radius: 1.5rem;
+}
+
+/* =========================
+   Sections
+========================= */
+
+.section-block {
+    padding: 5.5rem 0;
+}
+
+.section-soft {
+    background: #fff3f1;
+}
+
+.section-heading {
+    max-width: 720px;
+    margin: 0 auto 3.5rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.35rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* =========================
+   Cards
+========================= */
+
+.feature-card,
+.template-card,
+.demo-box {
+    background: #fff;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 24px rgba(0,0,0,.05);
+    height: 100%;
+}
+
+.feature-card {
+    padding: 2rem 1.5rem;
+    transition: .25s;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 30px rgba(0,0,0,.08);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background: #fff3f5;
+    font-size: 1.5rem;
+}
+
+.feature-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: .9rem;
+}
+
+/* =========================
+   Template Cards
+========================= */
+
+.template-card {
+    padding: 1rem;
+    transition: .3s;
+}
+
+.template-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.12);
+}
+
+.template-card img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 1rem;
+    transition: transform .4s;
+}
+
+.template-card:hover img {
+    transform: scale(1.05);
+}
+
+/* =========================
+   Demo
+========================= */
+
+.demo-box {
+    padding: 2.5rem;
+}
+
+/* =========================
+   Footer
+========================= */
+
+.site-footer {
+    margin-top: 2rem;
+    padding: 4.5rem 0;
+    background: #2f2a2b;
+    color: #fff;
+}
+
+.footer-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.footer-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li + li {
+    margin-top: .75rem;
+}
+
+.footer-links a,
+.footer-text {
+    color: rgba(255,255,255,.75);
+}
+
+.footer-links a:hover {
+    color: #fff;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (min-width: 992px) {
+
+    .menu-actions {
+        padding-top: 0;
+    }
+
+}
+
+@media (max-width: 991.98px) {
+
+    .navbar .nav-link {
+        margin: 0;
+        padding: .75rem 0;
+    }
+
+    .menu-actions {
+        margin-top: 1rem;
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .btn-login,
+    .btn-main {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-section {
+        padding-top: 4rem;
+    }
+
+    .hero-title {
+        font-size: 2.7rem;
+    }
+
+}
+
+@media (max-width: 767.98px) {
+
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .section-title {
+        font-size: 1.85rem;
+    }
+
+    .phone-mockup img,
+    .template-card img {
+        height: 260px;
+        min-height: auto;
+    }
+
+    .demo-box {
+        padding: 1.75rem;
+    }
+
+}
