@@ -1,12 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController; 
 
 Route::get('/trang-chu', function () {
-    return view('trangchu'); // Đổi từ 'home' thành 'welcome'
+    return view('home');
 })->name('home');
-
 Route::get('/demo/thanh-lich', function () {
     return view('demo-elegant');
 })->name('demo.elegant');

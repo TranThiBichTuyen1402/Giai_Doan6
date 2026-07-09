@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<!-- @extends('layouts.app')
 
 @section('title','Tất cả mẫu thiệp')
 
@@ -16,4 +16,4 @@
 
 </div>
 
-@endsection
+@endsection -->

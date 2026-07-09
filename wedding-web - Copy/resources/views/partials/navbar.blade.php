@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light sticky-top wedding-navbar">
+<!-- <nav class="navbar navbar-expand-lg navbar-light sticky-top wedding-navbar">
     <div class="container">
         <a class="navbar-brand logo" href="#home">Wedding Web</a>
 
@@ -28,4 +28,4 @@
             </div>
         </div>
     </div>
-</nav>
+</nav> -->

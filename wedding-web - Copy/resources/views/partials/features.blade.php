@@ -1,4 +1,4 @@
-<section class="section-block" id="features">
+<!-- <section class="section-block" id="features">
 
     <div class="container">
 
@@ -72,4 +72,4 @@
 
     </div>
 
-</section>
+</section> -->

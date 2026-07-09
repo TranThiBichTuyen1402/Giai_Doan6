@@ -1,4 +1,4 @@
-<section class="hero-section" id="home">
+<!-- <section class="hero-section" id="home">
     <div class="container">
         <div class="row align-items-center gy-5">
 
@@ -60,4 +60,4 @@
 
         </div>
     </div>
-</section>
+</section> -->
