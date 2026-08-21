@@ -1,0 +1,53 @@
+
+        body { 
+            font-family: 'Quicksand', sans-serif; 
+            background-color: #FFF5F6; 
+            color: #2b2523;
+        }
+        /* Bỏ hoàn toàn margin-left để không còn khoảng trống bên trái */
+        .main-content {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Custom kiểu dáng menu thả xuống (Dropdown) cho Bootstrap */
+        .dropdown-menu-custom {
+            border: 1px solid #fce4e6 !important;
+            border-radius: 0.75rem !important;
+            box-shadow: 0 8px 30px rgba(214, 51, 132, 0.05) !important;
+            font-size: 0.75rem;
+        }
+        .dropdown-item-custom {
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            color: #5c5350;
+            transition: all 0.15s ease;
+        }
+        .dropdown-item-custom:hover {
+            background-color: #fff0f2;
+            color: #d63384;
+        }
+        /* Card Tùy Biến */
+        .card-custom {
+            border: 1px solid #fce4e6 !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 4px 20px rgba(214, 51, 132, 0.02) !important;
+            background-color: #ffffff;
+        }
+        /* Nút thao tác nhanh ở cột trái */
+        .quick-link-item {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #fdf0f1 !important;
+            border-radius: 0.75rem;
+            padding: 0.65rem 0.8rem;
+            background-color: #ffffff;
+            transition: all 0.2s ease-in-out;
+        }
+        .quick-link-item:hover {
+            transform: translateX(3px);
+            background-color: #fffafb;
+            border-color: #fce4e6 !important;
+        }
+        .quick-link-item:hover h6 { color: #d63384 !important; }

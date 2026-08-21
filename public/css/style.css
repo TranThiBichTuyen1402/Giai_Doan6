@@ -1,0 +1,176 @@
+body {
+    font-family: 'Quicksand', sans-serif;
+    background-color: #FFF0F2;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Font logo */
+.font-luxury {
+    font-family: 'Alex Brush', cursive;
+}
+
+/* Hero Banner 3D */
+.view-3d-space {
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
+}
+
+.wrapper-3d {
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+}
+
+.layer-bg-photo {
+    transform: translateZ(-10px) scale(1);
+    background-image: url('https://soheewedding.com/wp-content/uploads/2024/11/462762352_122165694566254080_8803890886102325504_n-min-1.jpg');
+}
+
+.layer-foreground-text {
+    transform: translateZ(60px) scale(0.9);
+}
+
+/* Hiệu ứng hạt */
+.particle {
+    position: absolute;
+    background: radial-gradient(circle,
+        rgba(255,255,255,0.8) 0%,
+        rgba(255,117,140,0) 70%);
+    border-radius: 50%;
+    animation: floatParticle linear infinite;
+    pointer-events: none;
+}
+
+@keyframes floatParticle {
+    0% {
+        transform: translateY(105vh) scale(0.5);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translateY(-5vh) scale(1.2);
+        opacity: 0;
+    }
+}
+        :root {
+            --wed-pink-50:  #FFF9F9;
+            --wed-pink-100: #FFF0F2;
+            --wed-pink-200: #FFE4E8;
+            --wed-pink-300: #FFD1D7;
+            --wed-pink-400: #FCD3D7;
+            --wed-pink-500: #EC4899;
+            --wed-rose-500: #F43F5E;
+            --wed-amber-500:#F59E0B;
+            --wed-stone-800:#292524;
+            --wed-stone-700:#44403c;
+            --wed-stone-600:#57534e;
+            --wed-stone-500:#78716c;
+            --wed-stone-400:#a8a29e;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--wed-pink-100);
+            color: var(--wed-stone-800);
+        }
+
+        .font-cursive { font-family: 'Alex Brush', cursive; }
+
+        /* ===== Generic helpers not covered by Bootstrap ===== */
+        .z-40 { z-index: 40; }
+        .z-50 { z-index: 50; }
+        .bg-wed-pink-50  { background-color: var(--wed-pink-50); }
+        .bg-wed-pink-100 { background-color: var(--wed-pink-100); }
+        .bg-wed-pink-200 { background-color: var(--wed-pink-200); }
+        .bg-wed-pink-300 { background-color: var(--wed-pink-300); }
+        .bg-wed-pink-400 { background-color: var(--wed-pink-400); }
+        .text-wed-pink   { color: var(--wed-pink-500); }
+        .text-wed-stone  { color: var(--wed-stone-700); }
+        .border-wed-pink { border-color: var(--wed-pink-300) !important; }
+
+        .rounded-4xl { border-radius: 1.75rem; }
+        .rounded-full { border-radius: 999px; }
+
+        .backdrop-blur { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #db2777, #f43f5e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .gradient-hero-text {
+            background: linear-gradient(90deg, #db2777, #f43f5e, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .gradient-btn {
+            background: linear-gradient(90deg, #ec4899, #f43f5e, #ec4899);
+            color: #fff;
+            border: none;
+        }
+        .gradient-btn-simple {
+            background: linear-gradient(90deg, #ec4899, #f43f5e);
+            color: #fff;
+            border: none;
+        }
+        .gradient-bg-section {
+            background: linear-gradient(180deg, var(--wed-pink-100), var(--wed-pink-300));
+        }
+        .gradient-bg-hero {
+            background: linear-gradient(135deg, var(--wed-pink-300), var(--wed-pink-100) 55%, #fecdd3);
+        }
+
+        .transition-all { transition: all .3s ease; }
+        .hover-lift:hover { transform: translateY(-1rem); }
+        .hover-scale:hover { transform: scale(1.05); }
+        .hover-scale-sm:hover { transform: scale(1.05); }
+        .active-scale:active { transform: scale(.95); }
+
+        .card-feature { transition: all .3s ease; cursor: pointer; overflow: hidden; position: relative; }
+        .card-feature:hover { box-shadow: 0 20px 40px rgba(0,0,0,.12); border-color: var(--wed-pink-500) !important; transform: translateY(-1rem); }
+        .card-feature .icon-box { transition: all .3s ease; }
+        .card-feature:hover .icon-box {
+            background: linear-gradient(90deg, #ec4899, #f43f5e);
+            color: #fff;
+            transform: scale(1.1) rotate(6deg);
+        }
+        .card-feature:hover h3 { color: var(--wed-pink-500); }
+
+        .card-template { transition: all .3s ease; }
+        .card-template:hover { box-shadow: 0 15px 35px rgba(0,0,0,.12); border-color: #f472b6 !important; }
+        .card-template img { transition: transform .5s ease; }
+        .card-template:hover img { transform: scale(1.05); }
+
+        .badge-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .btn-pink-outline {
+            background: #fff;
+            color: var(--wed-pink-500);
+            border: 1px solid var(--wed-pink-300);
+        }
+        .btn-pink-outline:hover { background: #fdf2f8; color: var(--wed-pink-500); }
+
+        /* Hero / 3D card area */
+        .view-3d-space { perspective: 1200px; }
+        .layer-bg-photo { background-size: cover; background-position: center; }
+
+        #particle-container { pointer-events: none; }
+
+        /* Nav pill link */
+        .nav-link-wed { color: var(--wed-stone-700); font-weight: 700; font-size: .9rem; }
+        .nav-link-wed:hover { color: var(--wed-pink-500); }
+
+        .modal-wed { max-width: 420px; }
+
+        .faq-content { max-height: 0; overflow: hidden; transition: max-height .3s ease; background: rgba(253, 242, 248, .4); }
+        .faq-toggle i { transition: transform .3s ease; }

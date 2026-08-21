@@ -1,0 +1,72 @@
+
+        body{
+            font-family:'Quicksand',sans-serif;
+            background:#FFF5F6;
+        }
+
+        /* Sidebar */
+        .sidebar{
+            width:260px;
+            position:fixed;
+            top:0;
+            left:0;
+            height:100vh;
+            background:#fff;
+            border-right:1px solid #f8d7da;
+        }
+
+        .logo-box{
+            width:42px;
+            height:42px;
+            border-radius:12px;
+            background:linear-gradient(135deg,#ec4899,#fb7185);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            color:#fff;
+        }
+
+        .menu-link{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:12px 15px;
+            margin-bottom:8px;
+            text-decoration:none;
+            color:#666;
+            border-radius:12px;
+            font-weight:600;
+            transition:.3s;
+        }
+
+        .menu-link:hover{
+            background:#FFF1F5;
+            color:#ec4899;
+        }
+
+        .menu-link.active{
+            background:#FCE7F3;
+            color:#ec4899;
+            font-weight:700;
+        }
+
+        .content{
+            margin-left:260px;
+        }
+
+        .card-custom{
+            border:1px solid #f8d7da;
+            border-radius:18px;
+        }
+
+        @media(max-width:768px){
+
+            .sidebar{
+                display:none;
+            }
+
+            .content{
+                margin-left:0;
+            }
+
+        }
