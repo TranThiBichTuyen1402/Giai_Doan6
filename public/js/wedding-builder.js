@@ -273,3 +273,80 @@
             });
         });
     });
+
+    // map
+    window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'UPDATE_CARD_FIELD') return;
+
+    const { field, value, isImage } = e.data;
+    const targets = document.querySelectorAll(`[data-field="${field}"]`);
+
+    targets.forEach(target => {
+        if (isImage) {
+            if (target.tagName === 'IMG') target.src = value;
+        } else {
+            target.innerText = value || target.getAttribute('data-default') || '';
+        }
+    });
+});
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('guestSearchInput');
+    const button = document.getElementById('btnDoSearch');
+    const resultDiv = document.getElementById('guestSearchResultArea');
+
+    // Kiểm tra nếu trang không có các thẻ này thì dừng ngay, tránh lỗi addEventListener trên null
+    if (!input || !button || !resultDiv) return;
+
+    button.addEventListener('click', function () {
+        const name = input.value.trim();
+        
+        // Lấy thông tin an toàn qua dataset HTML
+        const cardId = input.dataset.cardId || '';
+        const searchUrl = input.dataset.searchUrl || '/rsvp/search-table';
+
+        if (!name) {
+            resultDiv.innerHTML = `<div class="alert alert-warning py-2 my-2 text-dark small">Vui lòng nhập tên của bạn!</div>`;
+            return;
+        }
+
+        resultDiv.innerHTML = `<div class="text-warning small my-2"><span class="spinner-border spinner-border-sm me-1"></span> Đang tra cứu...</div>`;
+
+        fetch(`${searchUrl}?card_id=${encodeURIComponent(cardId)}&name=${encodeURIComponent(name)}`)
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Lỗi kết nối máy chủ');
+                }
+                return data;
+            })
+            .then(data => {
+                if (!data.success) {
+                    resultDiv.innerHTML = `<div class="alert alert-info py-2 my-2 text-dark small">${data.message}</div>`;
+                    return;
+                }
+
+                let html = '';
+                data.guests.forEach(guest => {
+                    html += `
+                        <div class="p-3 rounded my-2 text-center" style="background: rgba(255,255,255,.12); border: 1px solid #f59e0b;">
+                            <div class="fw-bold fs-4 text-warning">🪑 ${guest.table_name}</div>
+                            <div class="text-white small mt-1">Khách mời: <strong>${guest.guest_name}</strong></div>
+                            ${guest.guest_count > 1 ? `<div class="text-info small mt-1">👥 ${guest.guest_count} người</div>` : ''}
+                        </div>
+                    `;
+                });
+                resultDiv.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Lỗi chi tiết:', error);
+                resultDiv.innerHTML = `<div class="alert alert-danger py-2 my-2 text-dark small">${error.message}</div>`;
+            });
+    });
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            button.click();
+        }
+    });
+});

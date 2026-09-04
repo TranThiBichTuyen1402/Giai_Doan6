@@ -6,29 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-   public function up(): void
-{
-    Schema::create('tables', function (Blueprint $table) {
-        $table->id();
-        $table->foreignId('wedding_card_id')->constrained('wedding_cards')->onDelete('cascade');
-        $table->string('name'); // Tên bàn: Bàn 01, Bàn Cấp 3, Bàn VIP...
-        $table->string('location')->nullable(); // Khu vực: Sảnh A, Tầng 1, Nhà gái...
-        $table->integer('capacity')->default(10); // Số ghế tối đa
-        $table->timestamps();
-    });
-
-    // Thêm cột table_id vào bảng rsvps (nếu chưa có) để gán khách vào bàn
-    Schema::table('rsvps', function (Blueprint $table) {
-        $table->foreignId('table_id')->nullable()->constrained('tables')->onDelete('set null');
-    });
+    public function up(): void
+    {
+        Schema::create('wedding_tables', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('wedding_card_id')->constrained('wedding_cards')->onDelete('cascade');
+            $table->string('name'); // Ví dụ: Bàn 01, Bàn Dự Phòng 01
+            $table->string('group_name')->nullable(); // Cụm/Nhóm: Bạn Cấp 3, Họ Hàng Chú Rể,...
+            $table->integer('capacity')->default(10); // Sức chứa tối đa (Thực tế ngồi)
+            $table->integer('soft_capacity')->default(8); // Sức chứa xếp sẵn (Chừa 20% giảm xóc)
+            $table->boolean('is_backup')->default(false); // Bàn dự phòng linh hoạt
+            $table->timestamps();
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('wedding_tables');

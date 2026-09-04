@@ -21,7 +21,8 @@
                    <iframe
     src="{{ route('card.demo', ['id' => $template->id]) }}"
     class="w-100 border-0"
-    style="height: 500px; pointer-events: none;"
+    style="height: 500px; pointer-events: auto; overflow-y: auto;"
+    scrolling="yes"
     loading="lazy">
 </iframe>
                 </div>

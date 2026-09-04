@@ -330,11 +330,21 @@
         <p class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'GEM Center, Quận 1, TP.HCM' }}</span></p>
 
         <div class="d-flex justify-content-center gap-2 mb-3">
-            @if(!empty($card->map_link))
-            <a id="map_link_btn" href="{{ $card->map_link }}" target="_blank" class="btn btn-dark btn-sm rounded-pill px-3">
-                <i class="bi bi-map me-1"></i> Xem Bản Đồ
-            </a>
-            @endif
+             @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+        <!-- ĐÃ ĐƯỢC NÂNG Z-INDEX VÀ ÉP POINTER-EVENTS -->
+         <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+           class="btn btn-sm rounded-pill px-3 py-1.5 text-white fw-bold shadow-sm d-inline-flex align-items-center gap-1"
+       style="background-color: var(--dark-pink, #ff4d6d); border: none; font-size: 0.82rem;">
+        <i class="bi bi-geo-alt-fill"></i> Xem Bản Đồ
+        </a>
             <button onclick="addToGoogleCalendar()" class="btn btn-outline-dark btn-sm rounded-pill px-3">
                 <i class="bi bi-calendar-plus me-1"></i> Thêm vào Lịch
             </button>
@@ -351,6 +361,31 @@
                 <div><strong class="d-block fs-6 text-dark" data-field="time_party">{{ $card->time_party ?? '12:00' }}</strong><span class="text-sub">Khai tiệc</span></div>
             </div>
         </div>
+    </div>
+
+        {{-- 6. TRA CỨU BÀN TIỆC (Khối vừa thêm) --}}
+    <div class="paper-card scroll-reveal scroll-fade-up">
+        <h6 class="font-syne text-dark fw-bold mb-1" style="letter-spacing: 1px;">
+            <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
+        </h6>
+        <p class="small text-sub mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+
+        <div class="search-box-wrap shadow-sm">
+            <input id="guestSearchInput" 
+                   type="text" 
+                   class="form-control" 
+                   data-card-id="{{ $card->id ?? '' }}" 
+                   data-search-url="{{ route('rsvp.searchTable') }}" 
+                   placeholder="Hãy nhập tên của bạn...">
+                   
+            <button type="button" 
+                    id="btnDoSearch" 
+                    class="btn btn-rose-gold text-nowrap">
+                Tra Cứu
+            </button>
+        </div>
+
+        <div id="guestSearchResultArea" class="mt-3"></div>
     </div>
 
     {{-- 5. ALBUM KỶ NIỆM (Hiệu ứng Zoom-In) --}}

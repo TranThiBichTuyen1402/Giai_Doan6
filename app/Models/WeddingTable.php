@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,11 +8,19 @@ class WeddingTable extends Model
 {
     use HasFactory;
 
-    protected $table = 'tables';
-    protected $fillable = ['wedding_card_id', 'name', 'capacity'];
+    protected $table = 'wedding_tables';
 
+    protected $fillable = [
+        'wedding_card_id',
+        'name',
+        'capacity',
+    ];
+
+    /**
+     * Khai báo mối quan hệ 1 Bàn Tiệc có nhiều Khách RSVP
+     */
     public function rsvps()
     {
-        return $this->hasMany(WeddingRsvp::class, 'table_id');
+        return $this->hasMany(WeddingRsvp::class, 'table_id', 'id');
     }
 }

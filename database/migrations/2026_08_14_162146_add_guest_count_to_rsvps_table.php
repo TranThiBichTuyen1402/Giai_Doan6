@@ -8,15 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('rsvps', function (Blueprint $table) {
-            $table->integer('guest_count')->default(1)->after('side');
-        });
+        // Cột guest_count đã có sẵn trong bảng wedding_rsvps
     }
 
     public function down(): void
     {
-        Schema::table('rsvps', function (Blueprint $table) {
-            $table->dropColumn('guest_count');
-        });
+        //
     }
 };

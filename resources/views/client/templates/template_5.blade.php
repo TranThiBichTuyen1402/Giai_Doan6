@@ -316,11 +316,21 @@
                 </div>
                 
                 <p class="small fw-bold mt-2 text-danger mb-1"><i class="bi bi-geo-alt-fill"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'White Palace, TP.HCM' }}</span></p>
-                @if(!empty($card->map_link))
-                    <a id="map_link_btn" href="{{ $card->map_link }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 mt-1">
-                        Xem bản đồ
-                    </a>
-                @endif
+                 @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+        <!-- ĐÃ ĐƯỢC NÂNG Z-INDEX VÀ ÉP POINTER-EVENTS -->
+         <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+           class="btn btn-sm rounded-pill px-4 py-2 text-white fw-semibold shadow-sm" 
+           style="background: var(--accent-rose, #e11d48); font-size: 0.85rem; position: relative; z-index: 9999; pointer-events: auto !important; display: inline-block;">
+            <i class="bi bi-map-fill me-1"></i> Xem Chỉ Đường Maps
+        </a>
             </div>
         </div>
 
@@ -358,15 +368,36 @@
             </div>
         </div>
 
+        {{-- SLIDE 6: TRA CỨU BÀN TIỆC ANALOG STYLE --}}
         <div class="slide-page">
             <div class="sweet-paper">
-                <h4 class="fw-bold mb-3" style="color: var(--dark-pink); font-family: 'Pattaya', sans-serif;">Tra Cứu Bàn Tiệc</h4>
+                <div class="font-mono text-uppercase text-muted mb-2">SEATING CHART</div>
+                <h4 class="fw-bold mb-3 font-mono text-uppercase" style="color: var(--analog-accent, var(--dark-pink)); font-size: 1.4rem;">
+                    <i class="bi bi-search me-1"></i> Tra Cứu Bàn Tiệc
+                </h4>
+                
                 <p class="small text-muted mb-3">Nhập tên của bạn để tìm nhanh vị trí chỗ ngồi trong tiệc cưới nhé!</p>
+
+                <!-- Form tìm kiếm Analog -->
                 <div class="mb-3">
-                    <input type="text" id="seatName" class="form-control rounded-pill text-center" placeholder="Ví dụ: Nguyễn Văn A">
+                    <input id="seatName" 
+                           type="text" 
+                           class="form-control-3 w-100 text-center mb-0" 
+                           data-card-id="{{ $card->id ?? '' }}" 
+                           data-search-url="{{ route('rsvp.searchTable') }}" 
+                           placeholder="Hãy nhập tên của bạn...">
                 </div>
-                <button type="button" class="btn btn-danger rounded-pill px-4 shadow-sm fw-bold" onclick="findSeat()">TÌM BÀN TIỆC</button>
-                <div id="seatResult" class="mt-3 fw-bold text-danger fs-6"></div>
+
+                <button type="button" 
+                        id="btnDoSearch" 
+                        onclick="findSeat()" 
+                        class="btn-outline-analog w-100 fw-bold">
+                    <i class="bi bi-search me-1"></i> TÌM BÀN TIỆC
+                </button>
+
+                <!-- Thẻ hiển thị kết quả -->
+                <div id="seatResult" class="mt-3 fw-bold font-mono" style="color: var(--analog-accent, var(--dark-pink)); font-size: 0.95rem;"></div>
+                <div id="guestSearchResultArea" class="mt-2 fw-bold font-mono" style="color: var(--analog-accent, var(--dark-pink)); font-size: 0.95rem;"></div>
             </div>
         </div>
 

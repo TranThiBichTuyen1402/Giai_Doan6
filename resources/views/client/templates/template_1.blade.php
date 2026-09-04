@@ -246,11 +246,27 @@
         <p class="small text-dark fw-bold mb-3 px-2">
             <i class="bi bi-geo-alt-fill text-danger me-1"></i><span data-field="wedding_location">{{ $card->wedding_location ?? 'Sảnh Diamond, Grand Palace, Hà Nội' }}</span>
         </p>
-        @if(!empty($card->map_link))
-            <a href="{{ $card->map_link }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-4 py-1.5 fw-bold" style="font-size: 0.78rem;">
-                <i class="bi bi-map-fill me-1"></i> Xem Chỉ Đường Maps
-            </a>
-        @endif
+        @php
+    // Nếu dâu rể dán link thì dùng link đó, nếu để trống thì tự tạo link Google Maps dựa vào tên Sảnh/Địa điểm
+    $mapUrl = !empty($card->map_link) 
+        ? $card->map_link 
+        : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+@endphp
+
+@php
+    $mapUrl = !empty($card->map_link) 
+        ? $card->map_link 
+        : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+@endphp
+
+<!-- Đổi lại thẻ <a> của nút Xem Chỉ Đường Maps trong Template -->
+<a href="javascript:void(0);" 
+   id="btn_map_link" 
+   onclick="openGoogleMapDirect()" 
+   class="btn btn-sm btn-outline-danger rounded-pill px-4 py-1.5 fw-bold" 
+   style="font-size: 0.78rem;">
+    <i class="bi bi-map-fill me-1"></i> Xem Chỉ Đường Maps
+</a>
     </div>
 
     {{-- THÔNG TIN CẶP ĐÔI --}}
@@ -333,13 +349,30 @@
         <button type="button" class="btn btn-danger mt-3" onclick="uploadMoment()">Tải ảnh</button>
     </div>
 
-    {{-- TRA CỨU BÀN TIỆC --}}
-    <div class="white-card">
-        <div class="card-header-title"><i class="bi bi-search me-1"></i> TÌM BÀN TIỆC</div>
-        <input id="seatName" type="text" class="form-control" placeholder="Nhập tên hoặc mã khách">
-        <button type="button" onclick="findSeat()" class="btn btn-outline-danger mt-3 rounded-pill">Tra cứu</button>
-        <p id="seatResult" class="mt-3 fw-bold text-success"></p>
+  {{-- TRA CỨU BÀN TIỆC --}}
+<div class="search-seat-card mx-auto my-3 p-3 rounded-4" style="max-width: 440px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+    <h3 class="text-white text-uppercase fs-6 fw-bold mb-1" style="font-size: 0.95rem !important;">
+        <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
+    </h3>
+    <p class="small text-white-50 mb-3" style="font-size: 0.85rem;">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+
+    <!-- Thanh tìm kiếm size vừa vặn -->
+    <div class="input-group search-input-group shadow-sm">
+        <input id="guestSearchInput" 
+               type="text" 
+               class="form-control bg-dark text-white border-0 px-3" 
+               style="font-size: 0.9rem; height: 40px;"
+               data-card-id="{{ $card->id ?? '' }}" 
+               data-search-url="{{ route('rsvp.searchTable') }}" 
+               placeholder="Hãy nhập tên của bạn...">
+               
+        <button type="button" id="btnDoSearch" class="btn btn-warning fw-bold text-dark px-3 text-nowrap" style="font-size: 0.9rem; height: 40px; display: flex; align-items: center;">
+            Tra Cứu
+        </button>
     </div>
+
+    <div id="guestSearchResultArea" class="mt-3"></div>
+</div>
 
     {{-- HỘP MỪNG CƯỚI --}}
     <div class="white-card">
@@ -414,6 +447,7 @@
                         <label class="form-label small fw-semibold">Họ và tên của bạn</label>
                         <input type="text" name="name" class="form-control rounded-3" required placeholder="Nhập tên của bạn">
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Bạn là khách nhà ai?</label>
                         <select name="side" class="form-select rounded-3">

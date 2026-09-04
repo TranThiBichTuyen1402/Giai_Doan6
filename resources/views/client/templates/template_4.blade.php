@@ -90,21 +90,56 @@
     .cd-box small { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
     /* NÚT ĐIỀU HƯỚNG TỐI GIẢN */
-    .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 12px; z-index: 100; }
-    .btn-move {
+    /* .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 12px; z-index: 100; } */
+    .controls { 
+    position: fixed; 
+    bottom: 30px; 
+    right: 30px; 
+    display: flex; 
+    gap: 12px; 
+    z-index: 999999 !important; 
+    pointer-events: auto !important;
+}
+    /* .btn-move {
         width: 46px; height: 46px;
         border: 1px solid rgba(225, 29, 72, 0.3);
         background: rgba(255, 255, 255, 0.8);
         color: var(--accent-rose); border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         transition: 0.3s; cursor: pointer; backdrop-filter: blur(4px);
-    }
+    } */
+        .btn-move {
+    width: 46px; 
+    height: 46px;
+    border: 1px solid rgba(225, 29, 72, 0.3);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--accent-rose); 
+    border-radius: 50%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    transition: 0.3s; 
+    cursor: pointer !important; 
+    backdrop-filter: blur(4px);
+    pointer-events: auto !important;
+}
     .btn-move:hover { background: var(--accent-rose); color: #fff; }
 
-    .dots-nav {
+    /* .dots-nav {
         position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
         display: flex; flex-direction: column; gap: 12px; z-index: 100;
-    }
+    } */
+        .dots-nav {
+    position: fixed; 
+    left: 20px; 
+    top: 50%; 
+    transform: translateY(-50%);
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+}
     .dot { width: 8px; height: 8px; background: #fca5a5; border-radius: 50%; cursor: pointer; transition: 0.3s; }
     .dot.active { background: var(--accent-rose); transform: scale(1.5); }
 
@@ -326,14 +361,28 @@
             <div class="content-box">
                 <span class="badge-tag">Địa Điểm</span>
                 <h3 class="font-serif fw-bold mb-3" data-field="wedding_location">{{ $card->wedding_location ?? 'Sảnh Diamond, Grand Palace, Hà Nội' }}</h3>
-                @if(!empty($card->map_link))
-                    <a href="{{ $card->map_link }}" target="_blank" class="btn btn-danger rounded-pill px-4 py-2 shadow-sm">XEM BẢN ĐỒ</a>
-                @endif
+             @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+        <!-- ĐÃ ĐƯỢC NÂNG Z-INDEX VÀ ÉP POINTER-EVENTS -->
+         <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+           class="btn btn-sm rounded-pill px-4 py-2 text-white fw-semibold shadow-sm" 
+           style="background: var(--accent-rose, #e11d48); font-size: 0.85rem; position: relative; z-index: 9999; pointer-events: auto !important; display: inline-block;">
+            <i class="bi bi-map-fill me-1"></i> Xem Chỉ Đường Maps
+        </a>
             </div>
         </div>
     </div>
 
+   <!-- SLIDE 6: TIMELINE & TRA CỨU BÀN TIỆC -->
     <div class="slide-item">
+        <!-- NỬA TRÁI: TIMELINE -->
         <div class="side-left">
             <div class="content-box">
                 <span class="badge-tag">Timeline</span>
@@ -354,13 +403,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- NỬA PHẢI: TRA CỨU BÀN TIỆC -->
         <div class="side-right">
-            <div class="content-box">
-                <span class="badge-tag">Seating</span>
-                <h3 class="font-serif fw-bold mb-3">Tra Cứu Bàn Tiệc</h3>
-                <input type="text" id="seatName" class="form-control rounded-pill text-center mb-3" placeholder="Nhập tên của bạn...">
-                <button type="button" class="btn btn-outline-danger rounded-pill px-4" onclick="findSeat()">Tra Cứu</button>
-                <div id="seatResult" class="mt-3 fw-bold text-danger"></div>
+            <div class="search-seat-card w-100 mx-3 p-4 rounded-4" style="max-width: 420px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2;">
+                <h3 class="text-white text-uppercase fs-6 fw-bold mb-2">
+                    <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
+                </h3>
+                <p class="small text-white-50 mb-3" style="font-size: 0.85rem;">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+
+                <div class="input-group search-input-group shadow-sm">
+                    <input id="guestSearchInput" 
+                           type="text" 
+                           class="form-control bg-dark text-white border-0 px-3" 
+                           style="font-size: 0.9rem; height: 42px;"
+                           data-card-id="{{ $card->id ?? '' }}" 
+                           data-search-url="{{ route('rsvp.searchTable') }}" 
+                           placeholder="Hãy nhập tên của bạn...">
+                           
+                    <button type="button" id="btnDoSearch" class="btn btn-warning fw-bold text-dark px-3 text-nowrap" style="font-size: 0.9rem; height: 42px; display: flex; align-items: center;">
+                        Tra Cứu
+                    </button>
+                </div>
+
+                <div id="guestSearchResultArea" class="mt-3"></div>
             </div>
         </div>
     </div>
@@ -527,3 +593,71 @@
 </div>
 <div class="dots-nav" id="dotsContainer"></div>
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.slide-item');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dotsContainer = document.getElementById('dotsContainer');
+    
+    if (!slides.length) return;
+    
+    let currentIndex = 0;
+
+    // Tạo chấm chuyển slide (dots) tự động
+    slides.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+        if (index === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => goToSlide(index));
+        dotsContainer.appendChild(dot);
+    });
+
+    const dots = document.querySelectorAll('.dots-nav .dot');
+
+    function updateSlider() {
+        slides.forEach((slide, index) => {
+            if (index === currentIndex) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+
+        dots.forEach((dot, index) => {
+            if (index === currentIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    function goToSlide(index) {
+        currentIndex = index;
+        updateSlider();
+    }
+
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % slides.length;
+        updateSlider();
+    }
+
+    function prevSlide() {
+        currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+        updateSlider();
+    }
+
+    // Gán sự kiện click cho nút bấm
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+
+    // Cho phép dùng phím mũi tên lên/xuống để chuyển slide
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') nextSlide();
+        if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') prevSlide();
+    });
+});
+</script>
+@endpush

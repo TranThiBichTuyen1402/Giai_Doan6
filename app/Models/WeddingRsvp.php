@@ -8,7 +8,8 @@ use App\Models\WeddingTable;
 
 class WeddingRsvp extends Model
 {
-    protected $table = 'rsvps';
+    // SỬA CHÍNH XÁC TÊN BẢNG TẠI ĐÂY:
+    protected $table = 'wedding_rsvps';
 
     protected $fillable = [
         'wedding_card_id',

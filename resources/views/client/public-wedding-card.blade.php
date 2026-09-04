@@ -149,6 +149,113 @@
         });
     }
     @endif
+   
+document.getElementById('btnSearchSeat').addEventListener('click', function() {
+    let name = document.getElementById('guestNameInput').value;
+    let cardId = "{{ $card->id }}";
+    let resultDiv = document.getElementById('searchSeatResult');
+
+    if (!name.trim()) {
+        resultDiv.innerHTML = '<div class="alert alert-warning">Vui lòng nhập tên của bạn!</div>';
+        return;
+    }
+
+    resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+
+    fetch(`/api/search-table?card_id=${cardId}&keyword=${encodeURIComponent(name)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let html = '<div class="alert alert-success"><strong>Tìm thấy thông tin:</strong><ul class="mb-0 mt-2 pl-3">';
+                data.guests.forEach(guest => {
+                    html += `<li><strong>${guest.guest_name}</strong>: ${guest.table_name}`;
+                    if (guest.plus_ones > 0) html += ` (Đi kèm: ${guest.plus_ones} người)`;
+                    if (guest.note) html += `<br><small class="text-muted">Ghi chú: ${guest.note}</small>`;
+                    html += `</li>`;
+                });
+                html += '</ul></div>';
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = `<div class="alert alert-info">${data.message}</div>`;
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<div class="alert alert-danger">Đã có lỗi xảy ra, vui lòng thử lại sau!</div>';
+        });
+});
+function findSeat(e) {
+    if(e) e.preventDefault();
+    
+    let nameInput = document.getElementById('seatNameInput').value;
+    let cardId = "{{ $card->id ?? '' }}";
+    let resultDiv = document.getElementById('seatResultArea');
+
+    if (!nameInput.trim()) {
+        resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0 text-dark small">Vui lòng nhập tên của bạn!</div>';
+        return;
+    }
+
+    resultDiv.innerHTML = '<div class="text-warning small my-2"><span class="spinner-border spinner-border-sm me-1"></span> Đang tra cứu...</div>';
+
+    fetch(`/search-table?card_id=${cardId}&keyword=${encodeURIComponent(nameInput)}`)
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP status ' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                let html = '';
+                data.guests.forEach(guest => {
+                    html += `
+                        <div class="p-3 rounded my-2 text-center" style="background: rgba(255, 255, 255, 0.15); border: 1px solid #f59e0b;">
+                            <div class="fw-bold fs-4 text-warning">${guest.table_name}</div>
+                            <div class="text-white small">Khách mời: <strong>${guest.guest_name}</strong></div>
+                            ${guest.plus_ones > 0 ? `<div class="text-info small">+${guest.plus_ones} người đi cùng</div>` : ''}
+                            ${guest.note ? `<div class="text-white-50 small fst-italic mt-1">${guest.note}</div>` : ''}
+                        </div>
+                    `;
+                });
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = `<div class="alert alert-info py-2 my-2 text-dark small">${data.message}</div>`;
+            }
+        })
+        .catch(err => {
+            console.error('Lỗi API:', err);
+            resultDiv.innerHTML = '<div class="alert alert-danger py-2 my-2 text-dark small">Lỗi kết nối tra cứu! (Kiểm tra Console F12)</div>';
+        });
+}
+// Biến lưu link map hiện tại
+window.currentMapUrl = "{{ !empty($card->map_link) ? $card->map_link : '' }}";
+
+// Hàm bắt sự kiện click mở Google Maps chuẩn 100%
+function openGoogleMapDirect() {
+    let mapUrl = window.currentMapUrl;
+    
+    // Nếu chưa có link map, tự lấy tên địa điểm đang hiển thị để tìm
+    if (!mapUrl || mapUrl === '#' || mapUrl.trim() === '') {
+        const locText = document.querySelector('[data-field="wedding_location"]')?.innerText || '';
+        if (locText.trim()) {
+            const cleanLoc = locText.split(',').slice(0, 3).join(',');
+            mapUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(cleanLoc); 
+        } 
+    } 
+ 
+    if (mapUrl && mapUrl !== '#') { 
+        window.open(mapUrl, '_blank'); 
+    } else { 
+        alert('Vui lòng nhập địa điểm lễ cưới ở bảng bên trái!'); 
+    } 
+} 
+ 
+// Cập nhật biến currentMapUrl mỗi khi bên Builder gửi dữ liệu sang 
+window.addEventListener('message', function (e) { 
+    if (!e.data || e.data.type !== 'UPDATE_CARD_FIELD') return; 
+ 
+    if (e.data.field === 'map_link') { 
+        window.currentMapUrl = e.data.value; 
+    } 
+}); 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/wedding-builder.js') }}"></script>

@@ -197,17 +197,32 @@
 
                                     <div class="dropdown-divider"></div>
 
+{{-- FORM XÓA ẨN --}}
+<form id="delete-form-{{ $card->id }}" 
+      action="{{ route('card.destroy', $card->id) }}" 
+      method="POST" 
+      style="display: none;">
+    @csrf
+    @method('DELETE')
+</form>
+                                    {{-- XÓA THIỆP THỰC TẾ --}}
+                        <form id="delete-form-{{ $card->id }}" 
+                            action="{{ route('card.destroy', $card->id) }}" 
+                            method="POST" 
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
 
-                                    {{-- XÓA --}}
-                                    <button type="button"
-                                            class="delete-action"
-                                            onclick="confirmDeleteCard({{ $card->id }})">
+                        <button type="button"
+                                class="delete-action"
+                                onclick="confirmDeleteCard({{ $card->id }})">
 
-                                        <i class="fa fa-trash"></i>
+                            <i class="fa fa-trash"></i>
 
-                                        Xóa thiệp
+                            Xóa thiệp
 
-                                    </button>
+                        </button>
 
                                 </div>
 
@@ -799,20 +814,15 @@ function copyCardLink(url) {
 ===================================================== */
 
 function confirmDeleteCard(cardId) {
-
     const confirmed = confirm(
         'Bạn có chắc muốn xóa thiệp này không?\n\n' +
-        'Thao tác này sẽ không thể hoàn tác.'
+        'Thao tác này sẽ xóa toàn bộ danh sách khách mời, bàn tiệc và không thể hoàn tác!'
     );
 
-    if (!confirmed) {
-        return;
+    if (confirmed) {
+        // Submit form xóa tương ứng với ID thiệp
+        document.getElementById('delete-form-' + cardId).submit();
     }
-
-    alert(
-        'Chức năng xóa thiệp sẽ được kết nối với hệ thống ở bước tiếp theo.'
-    );
-
 }
 
 </script>

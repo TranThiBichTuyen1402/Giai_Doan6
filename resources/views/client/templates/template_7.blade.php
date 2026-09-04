@@ -320,6 +320,30 @@
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
+    /* TRA CỨU BÀN TIỆC */
+.search-table-input {
+    background: rgba(11, 29, 22, 0.9) !important;
+    border: 1px solid var(--accent-gold) !important;
+    color: var(--text-light) !important;
+    font-size: 0.95rem;
+}
+.search-table-input::placeholder {
+    color: var(--text-muted);
+}
+.search-table-input:focus {
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4) !important;
+}
+.table-result-card {
+    background: rgba(11, 29, 22, 0.95);
+    border: 1px dashed var(--accent-gold);
+    border-radius: 12px;
+    padding: 15px;
+    animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 @endpush
 
@@ -452,11 +476,21 @@
         <p class="fw-bold mb-3 mt-4 text-light"><i class="bi bi-geo-alt-fill text-warning me-1"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'Trung tâm Tiệc cưới GEM Center, Quận 1, TP.HCM' }}</span></p>
 
         <div class="d-flex justify-content-center gap-2 mb-3">
-            @if(!empty($card->map_link))
-            <a id="map_link_btn" href="{{ $card->map_link }}" target="_blank" class="btn btn-outline-warning btn-sm rounded-pill px-3">
-                <i class="bi bi-map me-1"></i> Xem Bản Đồ
-            </a>
-            @endif
+             @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+        <!-- ĐÃ ĐƯỢC NÂNG Z-INDEX VÀ ÉP POINTER-EVENTS -->
+         <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+           class="btn btn-sm rounded-pill px-3 py-1.5 text-white fw-bold shadow-sm d-inline-flex align-items-center gap-1"
+       style="background-color: var(--dark-pink, #ff4d6d); border: none; font-size: 0.82rem;">
+        <i class="bi bi-geo-alt-fill"></i> Xem Bản Đồ
+        </a>
             
             <button onclick="addToGoogleCalendar()" class="btn btn-outline-light btn-sm rounded-pill px-3">
                 <i class="bi bi-calendar-plus me-1"></i> Thêm vào Lịch
@@ -484,6 +518,34 @@
             </div>
         </div>
     </div>
+
+  {{-- KHỐI TRA CỨU BÀN TIỆC --}}
+<div class="paper-card">
+    <h4 class="font-serif fw-bold mb-1" style="color: var(--accent-gold); letter-spacing: 1px; font-size: 1.1rem;">
+        <i class="bi bi-search me-2"></i>TRA CỨU BÀN TIỆC
+    </h4>
+    <p class="small text-muted mb-3" data-field="search_table_desc">
+        {{ $card->search_table_desc ?? 'Nhập tên hoặc số điện thoại của bạn để xem vị trí chỗ ngồi nhé!' }}
+    </p>
+
+    <!-- Thanh tìm kiếm -->
+    <div class="input-group shadow-sm">
+        <input id="guestSearchInput" 
+               type="text" 
+               class="form-control search-table-input rounded-start-pill px-3" 
+               style="height: 42px;" 
+               data-card-id="{{ $card->id ?? '' }}" 
+               data-search-url="{{ route('rsvp.searchTable') }}" 
+               placeholder="Hãy nhập tên của bạn...">
+               
+        <button type="button" id="btnDoSearch" class="btn btn-gold-custom fw-bold px-4 rounded-end-pill" style="height: 42px;" onclick="doSearchTable()">
+            Tra Cứu
+        </button>
+    </div>
+
+    <!-- Khu vực hiển thị kết quả AJAX -->
+    <div id="guestSearchResultArea" class="mt-3 d-none"></div>
+</div>
 
     {{-- KHỐI 5: ALBUM ẢNH CƯỚI --}}
     <div class="paper-card">

@@ -55,12 +55,14 @@ return new class extends Migration
             $table->string('groom_bank_name')->nullable();
             $table->string('groom_bank_acc')->nullable();
             $table->string('groom_bank_owner')->nullable();
+            $table->string('groom_qr_code')->nullable();
 
             // 7. Mừng cưới Cô dâu
             $table->string('bride_bank_name')->nullable();
             $table->string('bride_bank_acc')->nullable();
             $table->string('bride_bank_owner')->nullable();
-
+            $table->string('bride_qr_code')->nullable();
+            
             // Trạng thái thanh toán
             $table->boolean('is_paid')->default(false);
             $table->timestamps();

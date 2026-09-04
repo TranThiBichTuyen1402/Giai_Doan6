@@ -280,11 +280,21 @@
         <p class="fw-semibold mb-3 mt-4"><i class="bi bi-geo-alt-fill text-warning me-1"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'Trung tâm Tiệc cưới GEM Center, Quận 1, TP.HCM' }}</span></p>
 
         <div class="d-flex justify-content-center gap-2 mb-4">
-            @if(!empty($card->map_link))
-            <a id="map_link_btn" href="{{ $card->map_link }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3">
-                <i class="bi bi-map me-1"></i> Xem Bản Đồ
-            </a>
-            @endif
+             @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+        <!-- ĐÃ ĐƯỢC NÂNG Z-INDEX VÀ ÉP POINTER-EVENTS -->
+         <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+           class="btn btn-sm rounded-pill px-3 py-1.5 text-white fw-bold shadow-sm d-inline-flex align-items-center gap-1"
+       style="background-color: var(--dark-pink, #ff4d6d); border: none; font-size: 0.82rem;">
+        <i class="bi bi-geo-alt-fill"></i> Xem Bản Đồ
+        </a>
             
             <button onclick="addToGoogleCalendar()" class="btn btn-outline-warning btn-sm rounded-pill px-3">
                 <i class="bi bi-calendar-plus me-1"></i> Thêm vào Lịch
@@ -301,6 +311,35 @@
                 <div><strong class="d-block text-warning fs-6" data-field="time_party">{{ $card->time_party ?? '12:00' }}</strong><span class="text-muted">Khai tiệc</span></div>
             </div>
         </div>
+    </div>
+
+    {{-- KHỐI TRA CỨU BÀN TIỆC --}}
+    <div class="section-block">
+        <h6 class="fw-bold text-uppercase text-warning-emphasis mb-2" style="letter-spacing: 2px;">— VỊ TRÍ CHỖ NGỒI —</h6>
+        <p class="small text-muted mb-3" data-field="search_table_desc">
+            {{ $card->search_table_desc ?? 'Nhập tên hoặc số điện thoại của bạn để tra cứu vị trí bàn tiệc nhé!' }}
+        </p>
+
+        <div class="input-group shadow-sm">
+            <input id="guestSearchInput" 
+                   type="text" 
+                   class="form-control search-input-sunny rounded-start-pill px-3" 
+                   style="height: 46px;" 
+                   data-card-id="{{ $card->id ?? '' }}" 
+                   data-search-url="{{ route('rsvp.searchTable') }}" 
+                   placeholder="Nhập tên ví dụ: Tuấn...">
+                   
+            <button type="button" 
+                    id="btnDoSearch" 
+                    class="btn btn-sunny px-4 rounded-end-pill" 
+                    style="height: 46px;" 
+                    onclick="doSearchTable()">
+                <i class="bi bi-search me-1"></i> Tra Cứu
+            </button>
+        </div>
+
+        <!-- Khung kết quả tra cứu AJAX -->
+        <div id="guestSearchResultArea" class="mt-3 d-none text-start"></div>
     </div>
 
     {{-- ALBUM --}}

@@ -279,11 +279,21 @@
             {{ $card->wedding_location ?? 'Sảnh Rose, Trung tâm Hội nghị MerPerle, TP.HCM' }}
         </p>
 
-        @if(!empty($card->map_link))
-            <a href="{{ $card->map_link }}" target="_blank" class="btn-outline-analog text-decoration-none d-inline-block mt-2">
-                <i class="bi bi-geo-alt me-1"></i> XEM BẢN ĐỒ
-            </a>
-        @endif
+        @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+    <!-- GẮN TRỰC TIẾP $mapUrl VÀO DATA ATTRIBUTE ĐỂ JS BẮT ĐƯỢC -->
+    <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+       class="btn btn-sm rounded-pill px-4 py-2 text-white fw-bold shadow" 
+   style="background-color: var(--dark-pink, #ff4d6d) !important; font-size: 0.9rem; position: relative; z-index: 999; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+    <i class="bi bi-geo-alt-fill fs-6"></i> Xem Chỉ Đường Maps
+    </a>
     </div>
 
     <hr style="border-color: var(--analog-line);">
@@ -383,12 +393,33 @@
         </button>
     </div>
 
+   {{-- KHỐI TÌM BÀN TIỆC ANALOG STYLE --}}
     <div class="section-block">
         <div class="font-mono text-uppercase text-muted mb-2">SEATING CHART</div>
         <div class="hero-title-3 mb-3" style="font-size: 1.5rem;">Tìm Bàn Tiệc</div>
-        <input id="seatName" type="text" class="form-control-3 w-100 text-center" placeholder="Nhập tên của bạn...">
-        <button type="button" onclick="findSeat()" class="btn-outline-analog">TRA CỨU</button>
-        <p id="seatResult" class="mt-3 fw-bold" style="color: var(--analog-accent);"></p>
+        
+        <p class="small text-muted mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+
+        <!-- Form tìm kiếm Analog -->
+        <div class="mb-3">
+            <input id="seatName" 
+                   type="text" 
+                   class="form-control-3 w-100 text-center mb-0" 
+                   data-card-id="{{ $card->id ?? '' }}" 
+                   data-search-url="{{ route('rsvp.searchTable') }}" 
+                   placeholder="Hãy nhập tên của bạn...">
+        </div>
+
+        <button type="button" 
+                id="btnDoSearch" 
+                onclick="findSeat()" 
+                class="btn-outline-analog w-100">
+            <i class="bi bi-search me-1"></i> TRA CỨU BÀN TIỆC
+        </button>
+
+        <!-- Kết quả hiển thị -->
+        <div id="seatResult" class="mt-3 fw-bold font-mono" style="color: var(--analog-accent); font-size: 0.95rem;"></div>
+        <div id="guestSearchResultArea" class="mt-2 fw-bold font-mono" style="color: var(--analog-accent); font-size: 0.95rem;"></div>
     </div>
 
     <div class="section-block">

@@ -451,11 +451,21 @@
         <p class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'Trung tâm Tiệc cưới GEM Center, Quận 1, TP.HCM' }}</span></p>
 
         <div class="d-flex justify-content-center gap-2 mb-3">
-            @if(!empty($card->map_link))
-            <a id="map_link_btn" href="{{ $card->map_link }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                <i class="bi bi-map me-1"></i> Xem Bản Đồ
-            </a>
-            @endif
+            @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+        <!-- ĐÃ ĐƯỢC NÂNG Z-INDEX VÀ ÉP POINTER-EVENTS -->
+         <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+           class="btn btn-sm rounded-pill px-3 py-1.5 text-white fw-bold shadow-sm d-inline-flex align-items-center gap-1"
+       style="background-color: var(--dark-pink, #ff4d6d); border: none; font-size: 0.82rem;">
+        <i class="bi bi-geo-alt-fill"></i> Xem Bản Đồ
+        </a>
             
             <button onclick="addToGoogleCalendar()" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                 <i class="bi bi-calendar-plus me-1"></i> Thêm vào Lịch
@@ -493,6 +503,31 @@
             <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=500" alt="Gallery 3" onclick="previewImage(this.src)">
             <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500" alt="Gallery 4" onclick="previewImage(this.src)">
         </div>
+    </div>
+
+    {{-- KHỐI: TÌM BÀN TIỆC --}}
+    <div class="paper-card">
+        <h4 class="font-serif fw-bold mb-3" style="color: var(--accent-red); letter-spacing: 1px;">
+            <i class="bi bi-search me-2"></i>TRA CỨU BÀN TIỆC
+        </h4>
+        <p class="small text-muted mb-3">Nhập tên của bạn để tìm vị trí chỗ ngồi nhé!</p>
+
+        <!-- Thanh tìm kiếm -->
+        <div class="input-group mb-3">
+            <input id="guestSearchInput" 
+                   type="text" 
+                   class="form-control rounded-start-pill border-danger-subtle px-3" 
+                   data-card-id="{{ $card->id ?? '' }}" 
+                   data-search-url="{{ route('rsvp.searchTable') }}" 
+                   placeholder="Hãy nhập tên của bạn...">
+                   
+            <button type="button" id="btnDoSearch" class="btn btn-danger-custom rounded-end-pill px-4">
+                Tra Cứu
+            </button>
+        </div>
+
+        <!-- Nơi hiển thị kết quả -->
+        <div id="guestSearchResultArea" class="mt-3"></div>
     </div>
 
     {{-- KHỐI 6: LỜI NHẮN LƯU BÚT (GUESTBOOK) --}}
@@ -556,11 +591,9 @@
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-body p-4 text-start">
                 <h5 class="fw-bold text-center text-danger mb-3 font-serif fs-4">Xác Nhận Tham Dự</h5>
-                  <form id="rsvpForm"
-      action="{{ isset($card->slug) ? route('wedding.rsvp', $card->slug) : '#' }}"
-      method="POST">
-
-    @csrf
+                
+                <form id="rsvpForm" action="{{ isset($card->slug) ? route('wedding.rsvp', $card->slug) : '#' }}" method="POST">
+                    @csrf
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Họ và tên của bạn</label>
                         <input type="text" name="name" class="form-control rounded-3" required placeholder="Nhập tên của bạn">
@@ -591,11 +624,11 @@
                         Gửi Xác Nhận
                     </button>
                 </form>
+
             </div>
         </div>
     </div>
 </div>
-
 {{-- MODAL GỬI LỜI CHÚC --}}
 <div class="modal fade" id="wishModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

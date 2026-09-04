@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\WeddingCard;
+use App\Models\WeddingTable;
+use App\Models\WeddingGuest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Template;
 use App\Models\WeddingRsvp;
+
 class WeddingCardController extends Controller
 {
     private function getSampleCardsData()
@@ -90,42 +93,30 @@ class WeddingCardController extends Controller
         ];
     }
 
- public function index(Request $request, $template_id = null)
-{
-    // ==========================================
-    // TRƯỜNG HỢP 1: ĐANG CHỈNH SỬA THIỆP CŨ
-    // ==========================================
-    if ($request->filled('card_id')) {
+    public function index(Request $request, $template_id = null)
+    {
+        if ($request->filled('card_id')) {
+            $card = WeddingCard::with(['tables.guests'])
+                ->where('id', $request->card_id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
 
-        $card = WeddingCard::where('id', $request->card_id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+            $templateId = $card->template_id;
+            return view('client.builder', compact('card', 'templateId'));
+        }
 
-        $templateId = $card->template_id;
+        $templateId = $template_id ?? $request->query('template', 1);
+        $sampleCards = $this->getSampleCardsData();
+        $data = $sampleCards[$templateId] ?? $sampleCards[1];
+
+        $card = new WeddingCard();
+        $card->fill($data);
+        $card->id = null;
+        $card->slug = null;
+        $card->user_id = Auth::id();
 
         return view('client.builder', compact('card', 'templateId'));
     }
-
-    // ==========================================
-    // TRƯỜNG HỢP 2: TẠO THIỆP MỚI
-    // ==========================================
-    $templateId = $template_id ?? $request->query('template', 1);
-
-    $sampleCards = $this->getSampleCardsData();
-
-    $data = $sampleCards[$templateId] ?? $sampleCards[1];
-
-    $card = new WeddingCard();
-
-    $card->fill($data);
-
-    // Thiệp mới chưa có ID thật
-    $card->id = null;
-    $card->slug = null;
-    $card->user_id = Auth::id();
-
-    return view('client.builder', compact('card', 'templateId'));
-}
 
     public function demo($id)
     {
@@ -141,14 +132,17 @@ class WeddingCardController extends Controller
         return view($viewPath, compact('card'));
     }
 
-    public function showPublicCard($slug)
-    {
-        $card = WeddingCard::where('slug', $slug)->firstOrFail();
-        $templateName = $card->template_id ? 'template_' . $card->template_id : 'template_1';
+   public function showPublicCard($slug)
+{
+    // Eager load tables VÀ rsvps của bàn đó
+    $card = WeddingCard::with(['tables.rsvps'])
+        ->where('slug', $slug)
+        ->firstOrFail();
 
-        return view("client.templates.{$templateName}", compact('card'));
-    }
+    $templateName = $card->template_id ? 'template_' . $card->template_id : 'template_1';
 
+    return view("client.templates.{$templateName}", compact('card'));
+}
     public function store(Request $request)
     {
         $request->validate([
@@ -159,38 +153,20 @@ class WeddingCardController extends Controller
         try {
             $card = null;
 
-/*
-|--------------------------------------------------------------------------
-| ĐANG CHỈNH SỬA THIỆP CŨ
-|--------------------------------------------------------------------------
-*/
-if ($request->filled('card_id')) {
+            if ($request->filled('card_id')) {
+                $card = WeddingCard::where('id', $request->card_id)
+                    ->where('user_id', Auth::id())
+                    ->firstOrFail();
+            } else {
+                $card = new WeddingCard();
+                $card->slug = Str::slug($request->groom_name . '-' . $request->bride_name) . '-' . rand(1000, 9999);
+                $card->is_vip = false;
+                $card->first_published_at = now();
 
-    $card = WeddingCard::where('id', $request->card_id)
-        ->where('user_id', Auth::id())
-        ->firstOrFail();
-
-}
-/*
-|--------------------------------------------------------------------------
-| TẠO THIỆP MỚI
-|--------------------------------------------------------------------------
-*/
-else {
-
-    $card = new WeddingCard();
-
-    $card->slug = Str::slug(
-        $request->groom_name . '-' . $request->bride_name
-    ) . '-' . rand(1000, 9999);
-
-    $card->is_vip = false;
-    $card->first_published_at = now();
-
-    if (Auth::check()) {
-        $card->user_id = Auth::id();
-    }
-}
+                if (Auth::check()) {
+                    $card->user_id = Auth::id();
+                }
+            }
 
             if (Auth::check()) {
                 $card->user_id = Auth::id();
@@ -207,38 +183,38 @@ else {
                 }
             }
 
-            $card->template_id = $request->input('template_id', $card->template_id ?? 1);
-            $card->groom_name       = $request->groom_name;
-            $card->groom_phone      = $request->groom_phone;
-            $card->groom_father     = $request->groom_father;
-            $card->groom_mother     = $request->groom_mother;
-            $card->groom_bio        = $request->groom_bio;
+            $card->template_id      = $request->input('template_id', $card->template_id ?? 1);
+            $card->groom_name        = $request->groom_name;
+            $card->groom_phone       = $request->groom_phone;
+            $card->groom_father      = $request->groom_father;
+            $card->groom_mother      = $request->groom_mother;
+            $card->groom_bio         = $request->groom_bio;
 
-            $card->bride_name       = $request->bride_name;
-            $card->bride_phone      = $request->bride_phone;
-            $card->bride_father     = $request->bride_father;
-            $card->bride_mother     = $request->bride_mother;
-            $card->bride_bio        = $request->bride_bio;
+            $card->bride_name        = $request->bride_name;
+            $card->bride_phone       = $request->bride_phone;
+            $card->bride_father      = $request->bride_father;
+            $card->bride_mother      = $request->bride_mother;
+            $card->bride_bio         = $request->bride_bio;
 
-            $card->lunar_date       = $request->lunar_date;
-            $card->wedding_time     = $request->wedding_time ?? '08:00';
-            $card->wedding_location = $request->wedding_location;
-            $card->map_link         = $request->map_link;
+            $card->lunar_date        = $request->lunar_date;
+            $card->wedding_time      = $request->wedding_time ?? '08:00';
+            $card->wedding_location  = $request->wedding_location;
+            $card->map_link          = $request->map_link;
 
-            $card->time_welcome     = $request->time_welcome;
-            $card->time_ceremony    = $request->time_ceremony;
-            $card->time_party       = $request->time_party;
+            $card->time_welcome      = $request->time_welcome;
+            $card->time_ceremony     = $request->time_ceremony;
+            $card->time_party        = $request->time_party;
 
-            $card->invitation_msg   = $request->invitation_msg;
-            $card->thank_msg        = $request->thank_msg;
-            $card->wedding_video    = $request->wedding_video;
+            $card->invitation_msg    = $request->invitation_msg;
+            $card->thank_msg         = $request->thank_msg;
+            $card->wedding_video     = $request->wedding_video;
 
-            $card->groom_bank_name  = $request->groom_bank_name;
-            $card->groom_bank_acc   = $request->groom_bank_acc;
-            $card->groom_bank_owner = $request->groom_bank_owner;
-            $card->bride_bank_name  = $request->bride_bank_name;
-            $card->bride_bank_acc   = $request->bride_bank_acc;
-            $card->bride_bank_owner = $request->bride_bank_owner;
+            $card->groom_bank_name   = $request->groom_bank_name;
+            $card->groom_bank_acc    = $request->groom_bank_acc;
+            $card->groom_bank_owner  = $request->groom_bank_owner;
+            $card->bride_bank_name   = $request->bride_bank_name;
+            $card->bride_bank_acc    = $request->bride_bank_acc;
+            $card->bride_bank_owner  = $request->bride_bank_owner;
 
             if ($request->filled('wedding_date')) {
                 try {
@@ -286,7 +262,6 @@ else {
 
             $card->save();
 
-            // LƯU TẠM ID THIỆP VÀO SESSION NẾU LÀ KHÁCH CHƯA ĐĂNG NHẬP
             if (!Auth::check()) {
                 session(['pending_card_id' => $card->id]);
             }
@@ -309,6 +284,81 @@ else {
                 'message' => 'Lỗi khi lưu thiệp: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * API Tra cứu vị trí Bàn tiệc thông minh
+     */
+  public function searchTable(Request $request)
+{
+    $keyword = trim($request->get('keyword') ?? $request->get('seatNameInput') ?? '');
+
+    if (!$keyword) {
+        return response()->json(['success' => false, 'message' => 'Vui lòng nhập tên!']);
+    }
+
+    // Lấy khách từ bảng wedding_guests (bảng bạn vừa thêm SQL)
+    $guests = \App\Models\WeddingGuest::where('name', 'LIKE', "%{$keyword}%")
+        ->with('table')
+        ->get();
+
+    if ($guests->count() > 0) {
+        $results = [];
+        foreach ($guests as $guest) {
+            $results[] = [
+                'guest_name' => $guest->name,
+                'table_name' => $guest->table ? $guest->table->name : 'Chưa xếp bàn',
+                'plus_ones'  => $guest->plus_ones ?? 0,
+                'note'       => $guest->note
+            ];
+        }
+        return response()->json(['success' => true, 'guests' => $results]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => "Không tìm thấy thông tin bàn tiệc cho \"{$keyword}\""
+    ]);
+}
+    /**
+     * Thêm nhanh 1 khách mời từ Builder
+     */
+    public function addGuest(Request $request)
+    {
+        $request->validate([
+            'wedding_card_id' => 'required|exists:wedding_cards,id',
+            'name'            => 'required|string|max:255',
+            'table_name'      => 'required|string|max:255',
+        ]);
+
+        // 1. Tự động tìm hoặc tạo Bàn tiệc
+        $table = WeddingTable::firstOrCreate(
+            [
+                'wedding_card_id' => $request->wedding_card_id,
+                'name'            => trim($request->table_name)
+            ],
+            [
+                'group_name'    => $request->group_name ?? 'Khách Mời',
+                'capacity'      => 10,
+                'soft_capacity' => 8
+            ]
+        );
+
+        // 2. Thêm khách vào Bàn đó
+        $guest = WeddingGuest::create([
+            'wedding_card_id'  => $request->wedding_card_id,
+            'wedding_table_id' => $table->id,
+            'name'             => trim($request->name),
+            'plus_ones'        => $request->plus_ones ?? 0,
+            'note'             => $request->note ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã thêm khách thành công!',
+            'guest'   => $guest,
+            'table'   => $table
+        ]);
     }
 
     public function upgradeToVip(Request $request)
@@ -361,43 +411,10 @@ else {
             'message' => 'Không tìm thấy ID thiệp hợp lệ trong nội dung chuyển khoản.'
         ], 400);
     }
+
     public function chooseTemplate()
-{
-    $templates = \App\Models\Template::where('is_active', 1)->get();
-
-    return view('client.choose-template', compact('templates'));
-}
-
-public function searchTable(Request $request)
-{
-    $keyword = trim($request->get('keyword'));
-    $cardId = $request->get('card_id');
-
-    if (!$keyword) {
-        return response()->json(['success' => false, 'message' => 'Vui lòng nhập tên khách mời!']);
+    {
+        $templates = \App\Models\Template::where('is_active', 1)->get();
+        return view('client.choose-template', compact('templates'));
     }
-
-    // Tìm khách theo tên trong đúng thiệp này
-    $guest = WeddingRsvp::where('wedding_card_id', $cardId)
-        ->where('guest_name', 'LIKE', "%{$keyword}%")
-        ->with('table')
-        ->first();
-
-    if (!$guest) {
-        return response()->json(['success' => false, 'message' => 'Không tìm thấy thông tin khách mời này!']);
-    }
-
-    if ($guest->table) {
-        return response()->json([
-            'success' => true,
-            'guest_name' => $guest->guest_name,
-            'table_name' => $guest->table->name
-        ]);
-    }
-
-    return response()->json([
-        'success' => false, 
-        'message' => "Tìm thấy khách '{$guest->guest_name}' nhưng chưa được xếp bàn!"
-    ]);
-}
 }

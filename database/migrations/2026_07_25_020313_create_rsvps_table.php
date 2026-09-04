@@ -1,27 +1,29 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-class WeddingRsvp extends Model
+return new class extends Migration
 {
-    // Sửa tên bảng cho khớp migration
-    protected $table = 'wedding_rsvps';
-
-    // Sửa các cột cho khớp với migration
-    protected $fillable = [
-        'wedding_card_id',
-        'name',
-        'side',
-        'status',
-        'guests',
-        'note',
-    ];
-
-    public function weddingCard(): BelongsTo
+    public function up(): void
     {
-        return $this->belongsTo(WeddingCard::class, 'wedding_card_id');
+        Schema::create('wedding_rsvps', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('wedding_card_id')->constrained('wedding_cards')->onDelete('cascade');
+            $table->string('guest_name');
+            $table->string('phone')->nullable();
+            $table->enum('side', ['groom', 'bride'])->default('groom');
+            $table->boolean('is_attending')->nullable()->default(null);
+            $table->integer('guest_count')->default(1);
+            $table->foreignId('table_id')->nullable();
+            $table->text('message')->nullable();
+            $table->timestamps();
+        });
     }
-}
+
+    public function down(): void
+    {
+        Schema::dropIfExists('wedding_rsvps');
+    }
+};

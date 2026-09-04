@@ -350,11 +350,21 @@
                 <span data-field="wedding_location">{{ $card->wedding_location ?? 'Sảnh Rose, Trung tâm Hội nghị MerPerle, TP.HCM' }}</span>
             </p>
 
-            @if(!empty($card->map_link))
-                <a href="{{ $card->map_link }}" target="_blank" class="btn btn-sm rounded-pill px-4 py-2 text-white fw-semibold" style="background: var(--korean-pink); font-size: 0.78rem;">
-                    <i class="bi bi-map-fill me-1"></i> Xem Chỉ Đường Maps
-                </a>
-            @endif
+            @php
+        $mapUrl = !empty($card->map_link) 
+            ? $card->map_link 
+            : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($card->wedding_location ?? 'Địa điểm tổ chức');
+    @endphp
+
+    <!-- GẮN TRỰC TIẾP $mapUrl VÀO DATA ATTRIBUTE ĐỂ JS BẮT ĐƯỢC -->
+    <a href="javascript:void(0);" 
+       id="btn_map_link" 
+       data-map-url="{{ $mapUrl }}"
+       onclick="openGoogleMapDirect()" 
+       class="btn btn-sm rounded-pill px-4 py-2 text-white fw-semibold" 
+       style="background: var(--korean-pink); font-size: 0.78rem;">
+        <i class="bi bi-map-fill me-1"></i> Xem Chỉ Đường Maps
+    </a>
         </div>
 
         <div class="paper-frame">
@@ -435,14 +445,36 @@
             </button>
         </div>
 
-        <div class="paper-frame">
-            <div class="card-header-title-2"><i class="bi bi-search me-1"></i> TÌM BÀN TIỆC</div>
-            <input id="seatName" type="text" class="form-control mb-3 text-center" placeholder="Nhập tên hoặc mã khách">
-            <button type="button" onclick="findSeat()" class="btn btn-outline-danger rounded-pill px-4 fw-semibold" style="color: var(--korean-pink); border-color: var(--korean-pink);">
-                Tra cứu
-            </button>
-            <p id="seatResult" class="mt-3 fw-bold" style="color: var(--korean-pink);"></p>
-        </div>
+        {{-- TRA CỨU BÀN TIỆC --}}
+<div class="paper-frame">
+    <div class="card-header-title-2">
+        <i class="bi bi-search me-1"></i> TRA CỨU BÀN TIỆC
+    </div>
+    <p class="small text-muted mb-3" style="font-size: 0.82rem;">
+        Nhập tên của bạn để xem vị trí chỗ ngồi nhé!
+    </p>
+
+    <!-- Thanh tìm kiếm chuẩn Korean Style -->
+    <div class="input-group shadow-sm rounded-pill overflow-hidden p-1" style="background: var(--korean-soft-pink); border: 1px solid rgba(232, 165, 152, 0.4);">
+        <input id="guestSearchInput" 
+               type="text" 
+               class="form-control border-0 bg-transparent text-center px-3" 
+               style="font-size: 0.88rem; height: 40px; color: var(--korean-text);"
+               data-card-id="{{ $card->id ?? '' }}" 
+               data-search-url="{{ route('rsvp.searchTable') }}" 
+               placeholder="Hãy nhập tên của bạn...">
+               
+        <button type="button" 
+                id="btnDoSearch" 
+                class="btn rounded-pill fw-semibold px-4 text-white" 
+                style="background: var(--korean-pink); font-size: 0.85rem; height: 40px; border: none;">
+            Tra Cứu
+        </button>
+    </div>
+
+    <!-- Kết quả trả về -->
+    <div id="guestSearchResultArea" class="mt-3 fw-bold" style="color: var(--korean-pink); font-size: 0.95rem;"></div>
+</div>
 
         <div class="paper-frame">
     <div class="card-header-title-2"><i class="bi bi-qr-code-scan me-1"></i> HỘP MỪNG CƯỚI</div>

@@ -41,6 +41,7 @@
         }
         .vip-lock-overlay:hover { background: rgba(255, 255, 255, 0.8); }
     </style>
+    <!-- Google Maps JavaScript API với thư viện Places -->
 </head>
 <body>
 
@@ -175,14 +176,36 @@ value="{{ old('groom_name', $card->groom_name) }}">
                             <label class="form-label small fw-semibold">Giờ Tiệc Cưới</label>
                             <input type="text" id="input_wedding_time" name="wedding_time" class="form-control form-control-sm" value="{{ old('wedding_time', $card->wedding_time) }}">
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold">Địa Điểm / Sảnh Tiệc</label>
-                            <input type="text" id="input_wedding_location" name="wedding_location" class="form-control form-control-sm" value="{{ old('wedding_location', $card->wedding_location) }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold">Google Maps</label>
-                            <input type="url" id="input_map_link" name="map_link" class="form-control form-control-sm" value="{{ old('map_link', $card->map_link) }}">
-                        </div>
+                        <!-- TÌM ĐỊA ĐIỂM TỰ ĐỘNG KHÔNG DÙNG API KEY -->
+<div class="mb-2 position-relative">
+    <label class="form-label small fw-semibold">Địa Điểm / Sảnh Tiệc</label>
+    <div class="input-group input-group-sm">
+        <input type="text" 
+               id="input_wedding_location" 
+               name="wedding_location" 
+               class="form-control" 
+               placeholder="Gõ tên nhà hàng (ví dụ: Adora)..." 
+               value="{{ old('wedding_location', $card->wedding_location) }}"
+               autocomplete="off">
+        <button class="btn btn-outline-secondary" type="button" id="btn_search_map">🔍 Tìm</button>
+    </div>
+    <!-- Menu danh sách gợi ý -->
+    <div id="map_suggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto;"></div>
+    <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">
+        💡 <i>Gõ tên nhà hàng -> chọn từ gợi ý -> Link Google Maps sẽ tự cập nhật!</i>
+    </small>
+</div>
+
+<!-- Link Google Maps tự nhảy -->
+<div class="mb-2">
+    <label class="form-label small fw-semibold">Link Google Maps (Tự động)</label>
+    <input type="url" 
+           id="input_map_link" 
+           name="map_link" 
+           class="form-control form-control-sm bg-white" 
+           value="{{ old('map_link', $card->map_link) }}" 
+           placeholder="Link sẽ tự động nhảy khi chọn địa điểm">
+</div>
                     </div>
 
                     <div class="card p-3 mb-3 border-0 bg-light rounded-3">
@@ -892,7 +915,128 @@ if(btnCheck){
             });
         }
     });
-    
+function searchLocationMap() {
+    const locInput = document.getElementById('input_wedding_location');
+    if (locInput && locInput.value.trim() !== '') {
+        const query = encodeURIComponent(locInput.value.trim());
+        window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+    } else {
+        Swal.fire('Thông báo', 'Bạn vui lòng nhập "Địa Điểm / Sảnh Tiệc" ở trên trước nhé!', 'info');
+    }
+}  
+// ===============================
+// BẢN ĐỒ TỰ ĐỘNG KHÔNG CẦN API KEY (OpenStreetMap)
+// ===============================
+// ===============================
+// BẢN ĐỒ TỰ ĐỘNG (FIX LỖI TRẮNG MAPS)
+// ===============================
+const locInput = document.getElementById('input_wedding_location');
+const mapInput = document.getElementById('input_map_link');
+const suggestBox = document.getElementById('map_suggestions');
+const searchBtn = document.getElementById('btn_search_map');
+
+if (locInput) {
+    let timeout = null;
+
+    // Hàm tạo link Google Maps chuẩn không bao giờ bị trắng
+    function generateCleanMapUrl(rawText) {
+        if (!rawText) return '';
+        // Cắt bỏ mã bưu chính (94111...) và quốc gia "Việt Nam" để Google Maps không bị ngợp
+        const cleanParts = rawText.split(',').filter(p => !p.includes('9411') && !p.toLowerCase().includes('việt nam'));
+        const cleanQuery = cleanParts.length > 0 ? cleanParts.join(',') : rawText;
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanQuery.trim())}`;
+    }
+
+    function fetchLocations(query) {
+        if (!query || query.length < 3) {
+            suggestBox.classList.add('d-none');
+            return;
+        }
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=5`)
+            .then(res => res.json())
+            .then(data => {
+                suggestBox.innerHTML = '';
+                if (data.length === 0) {
+                    suggestBox.classList.add('d-none');
+                    return;
+                }
+
+                data.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action small py-2 text-truncate';
+                    btn.innerText = item.display_name;
+                    
+                    btn.addEventListener('click', function () {
+                        const locationName = item.display_name;
+                        locInput.value = locationName;
+
+                        // Tạo URL sạch truyền thẳng tên nhà hàng
+                        const gmapUrl = generateCleanMapUrl(locationName);
+                        mapInput.value = gmapUrl;
+
+                        suggestBox.classList.add('d-none');
+
+                        // Gửi dữ liệu sang iframe Preview
+                        if (previewFrame && previewFrame.contentWindow) {
+                            previewFrame.contentWindow.postMessage({
+                                type: 'UPDATE_CARD_FIELD',
+                                field: 'wedding_location',
+                                value: locationName
+                            }, '*');
+
+                            previewFrame.contentWindow.postMessage({
+                                type: 'UPDATE_CARD_FIELD',
+                                field: 'map_link',
+                                value: gmapUrl
+                            }, '*');
+                        }
+
+                        if (typeof saveBuilderDraft === 'function') {
+                            saveBuilderDraft();
+                        }
+                    });
+
+                    suggestBox.appendChild(btn);
+                });
+
+                suggestBox.classList.remove('d-none');
+            })
+            .catch(() => suggestBox.classList.add('d-none'));
+    }
+
+    // Khi tự gõ tay vào input
+    locInput.addEventListener('input', function () {
+        clearTimeout(timeout);
+        const val = this.value;
+        
+        // Tự sinh link sạch ngay lập tức
+        const gmapUrl = generateCleanMapUrl(val);
+        mapInput.value = gmapUrl;
+
+        // Bắn sang Preview
+        if (previewFrame && previewFrame.contentWindow) {
+            previewFrame.contentWindow.postMessage({
+                type: 'UPDATE_CARD_FIELD',
+                field: 'map_link',
+                value: gmapUrl
+            }, '*');
+        }
+
+        timeout = setTimeout(() => fetchLocations(val), 400);
+    });
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => fetchLocations(locInput.value));
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!locInput.contains(e.target) && !suggestBox.contains(e.target)) {
+            suggestBox.classList.add('d-none');
+        }
+    });
+}
     </script>
 </body>
 </html>
