@@ -93,10 +93,13 @@ class DashboardController extends Controller
                         ->get();
 
             // 4. Khách xác nhận ĐI nhưng CHƯA xếp bàn (table_id = null)
-            $unassignedGuests = WeddingRsvp::where('wedding_card_id', $selectedCard->id)
-                        ->where('is_attending', true)
-                        ->whereNull('table_id')
-                        ->get();
+           // 4. Lấy TẤT CẢ khách CHƯA xếp bàn (không phân biệt đi hay chưa phản hồi)
+$unassignedGuests = WeddingRsvp::where('wedding_card_id', $selectedCard->id)
+    ->where(function($query) {
+        $query->whereNull('table_id')
+              ->orWhere('table_id', 0);
+    })
+    ->get();
 
             // 5. Lấy Lời chúc (Nếu đã có Model Wish, nếu chưa thì để mặc định rỗng)
             if (class_exists('App\Models\Wish')) {
@@ -302,5 +305,35 @@ public function updateBankInfo(Request $request)
 
     return redirect()->back()->with('success', 'Đã lưu thông tin mừng cưới thành công!');
 }
+// Hàm dành cho Khách mời tải ảnh kỷ niệm lên từ trang Thiệp công khai
+    public function guestUploadPhoto(Request $request, $id)
+    {
+        $request->validate([
+            'photos.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        ]);
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $file) {
+                // 1. Lưu file vào thư mục public/uploads/moments (cho đồng bộ với hàm storeMoment)
+                $filename = 'moment_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                if (!file_exists(public_path('uploads/moments'))) {
+                    mkdir(public_path('uploads/moments'), 0777, true);
+                }
+
+                $file->move(public_path('uploads/moments'), $filename);
+
+                // 2. Lưu thông tin vào CSDL để hiển thị ra Dashboard
+                \App\Models\GalleryPhoto::create([
+                    'wedding_card_id' => $id,
+                    'photo_url'       => 'uploads/moments/' . $filename,
+                    'uploaded_by'     => $request->input('guest_name', 'Khách mời'),
+                    'is_approved'     => true,
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Cảm ơn bạn đã chia sẻ khoảnh khắc kỷ niệm!');
+    }
 
 }

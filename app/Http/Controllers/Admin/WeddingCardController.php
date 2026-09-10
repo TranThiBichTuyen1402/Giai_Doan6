@@ -61,4 +61,14 @@ public function destroy(WeddingCard $card)
         ->route('admin.wedding-cards.index')
         ->with('success', 'Đã xóa thiệp cưới thành công.');
 }
+public function toggleVip($id)
+{
+    $card = \App\Models\WeddingCard::findOrFail($id);
+    
+    // Đảo ngược trạng thái VIP (Nếu 0 thành 1, nếu 1 thành 0)
+    $card->is_vip = !$card->is_vip;
+    $card->save();
+
+    return redirect()->back()->with('success', 'Đã thay đổi trạng thái VIP cho thiệp thành công!');
+}
 }

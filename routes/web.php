@@ -101,16 +101,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/wedding-rsvps/{id}', [DashboardController::class, 'destroyRsvp'])->name('wedding_rsvps.destroy');
 
     // Route quản lý Lời chúc & Voice
-    Route::get('/dashboard/wishes', [WishController::class, 'index'])->name('wishes.index');
+    // Route::get('/dashboard/wishes', [WishController::class, 'index'])->name('wishes.index');
     Route::delete('/wishes/{id}', [DashboardController::class, 'destroyWish'])->name('wishes.destroy');
 
     // Route quản lý Kho ảnh khách chụp (Moments)
-    Route::get('/dashboard/moments', [MomentController::class, 'index'])->name('moments.index');
+    // Route::get('/dashboard/moments', [MomentController::class, 'index'])->name('moments.index');
     Route::post('/dashboard/moments', [DashboardController::class, 'storeMoment'])->name('moments.store');
     Route::delete('/dashboard/moments/{id}', [DashboardController::class, 'destroyMoment'])->name('moments.destroy');
 
     // Route quản lý Mừng cưới & QR Bank
-    Route::get('/dashboard/money', [MoneyController::class, 'index'])->name('money.index');
+    // Route::get('/dashboard/money', [MoneyController::class, 'index'])->name('money.index');
     Route::post('/dashboard/bank-info', [DashboardController::class, 'updateBankInfo'])->name('bank.update');
 
     // Xóa Thiệp Cưới
@@ -200,6 +200,17 @@ Route::middleware(['auth', 'isAdmin'])
             ->name('wedding-cards.edit');
 
 
+        // Danh sách thiệp
+        Route::get('/wedding-cards', [AdminWeddingCardController::class, 'index'])
+            ->name('wedding-cards.index');
+
+        // Kích hoạt / Hủy VIP thủ công (MỚI THÊM)
+        Route::patch('/wedding-cards/{id}/toggle-vip', [AdminWeddingCardController::class, 'toggleVip'])
+            ->name('wedding-cards.toggle_vip');
+
+        // Xem chi tiết thiệp
+        Route::get('/wedding-cards/{card}', [AdminWeddingCardController::class, 'show'])
+            ->name('wedding-cards.show');
         /*
         |--------------------------------------------------------------------------
         | BÀI VIẾT
@@ -261,8 +272,7 @@ Route::get('/wedding-invitation/{slug}', [WeddingCardController::class, 'showPub
     ->name('wedding.show');
 
 // Route cho Khách mời tải ảnh kỷ niệm lên thiệp
-Route::post('/wedding-invitation/gallery-upload', [GalleryController::class, 'guestUpload'])->name('gallery.guest_upload');
-
+Route::post('/wedding-invitation/{id}/guest-upload-photo', [App\Http\Controllers\Client\DashboardController::class, 'guestUploadPhoto'])->name('guest.upload_photo');
 // Demo
 Route::get('/demo/{id}', [WeddingCardController::class, 'demo'])
     ->name('card.demo');
@@ -276,8 +286,7 @@ Route::get('/demo/{id}', [WeddingCardController::class, 'demo'])
 
 // Kích hoạt VIP
 Route::post('/api/wedding/upgrade-vip', [WeddingCardController::class, 'upgradeToVip'])
-    ->name('wedding.upgrade_vip');
-
+    ->name('wedding.upgradeVip');
 // Webhook thanh toán
 Route::post('/api/webhook/payment', [WeddingCardController::class, 'handlePaymentWebhook']);
 

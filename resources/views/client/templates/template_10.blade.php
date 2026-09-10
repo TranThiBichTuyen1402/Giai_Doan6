@@ -309,31 +309,52 @@
         </div>
     </div>
 
-    {{-- TRA CỨU BÀN TIỆC --}}
+  {{-- TRA CỨU BÀN TIỆC --}}
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
+
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
 <div class="section-block">
+
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(225, 29, 72, 0.2) !important;">
+            <span class="badge fw-bold px-2 py-1" style="background: var(--primary-rose, #e11d48); color: #fff; font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
+        </div>
+    @endif
+
     <h6 class="fw-bold text-uppercase text-danger-emphasis mb-1" style="letter-spacing: 2px;">
         <i class="bi bi-search text-danger me-1"></i> TRA CỨU BÀN TIỆC
     </h6>
     <p class="small text-muted mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
 
     <div class="search-box-wrap shadow-sm">
-        <input id="guestSearchInput" 
+         <input id="guestNameInput"
                type="text" 
                class="form-control" 
-               data-card-id="{{ $card->id ?? '' }}" 
-               data-search-url="{{ route('rsvp.searchTable') }}" 
                placeholder="Hãy nhập tên của bạn...">
                
         <button type="button" 
-                id="btnDoSearch" 
+                id="btnSearchSeat" 
+                onclick="findSeat(event)" 
                 class="btn btn-peach text-nowrap">
             Tra Cứu
         </button>
     </div>
 
-    <div id="guestSearchResultArea" class="mt-3"></div>
+    <!-- Khung kết quả tra cứu chuẩn -->
+    <div id="seatResultArea" class="mt-3"></div>
 </div>
-    
+@endif
     {{-- ALBUM --}}
     <div class="section-block">
         <h6 class="fw-bold text-uppercase text-danger-emphasis mb-3" style="letter-spacing: 2px;">ALBUM KỶ NIỆM</h6>
@@ -344,6 +365,27 @@
             <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500" alt="Gallery 4" onclick="previewImage(this.src)">
         </div>
     </div>
+ @if(!empty($card->wedding_video))
+    <div class="white-card">
+        <div class="card-header-title">VIDEO CƯỚI</div>
+        <video controls class="w-100 rounded">
+            <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
+        </video>
+    </div>
+    @endif
+
+   {{-- WEDDING MOMENTS --}}
+<div class="white-card">
+    <div class="card-header-title">Wedding Moments</div>
+    <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+
+    {{-- Form gửi ảnh thật về Server --}}
+            <form action="{{ route('guest.upload_photo', $card->id ?? 10) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="photos[]" class="form-control" accept="image/*" multiple required>
+        <button type="submit" class="btn btn-danger mt-3">Tải ảnh</button>
+    </form>
+</div>
 
     {{-- GUESTBOOK --}}
     <div class="section-block">

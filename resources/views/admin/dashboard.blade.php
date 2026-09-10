@@ -184,22 +184,21 @@ Thêm Mẫu
         Template {{ $card->template_id }}
     </td>
 
-    <td>
-
-        @if($card->is_vip)
-
-            <span class="badge bg-warning text-dark">
-                VIP
-            </span>
-
-        @else
-
-            <span class="badge bg-secondary">
-                FREE
-            </span>
-
-        @endif
-
+   <td>
+        <form action="{{ route('admin.wedding-cards.toggle_vip', $card->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn đổi trạng thái VIP cho thiệp này?')">
+            @csrf
+            @method('PATCH')
+            
+            @if($card->is_vip)
+                <button type="submit" class="btn btn-sm btn-warning fw-bold border-0 shadow-sm rounded-pill px-2 py-0" title="Click để hạ xuống FREE">
+                    👑 VIP (Bấm để hủy)
+                </button>
+            @else
+                <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" title="Click để nâng cấp VIP">
+                    ⚡ FREE (Bấm mở VIP)
+                </button>
+            @endif
+        </form>
     </td>
 
     <td>

@@ -32,8 +32,8 @@ class WeddingRsvp extends Model
         return $this->belongsTo(WeddingCard::class);
     }
 
-    public function table()
-    {
-        return $this->belongsTo(WeddingTable::class, 'table_id');
-    }
+  public function table()
+{
+    return $this->belongsTo(\App\Models\WeddingTable::class, 'table_id');
+}
 }

@@ -520,7 +520,28 @@
     </div>
 
   {{-- KHỐI TRA CỨU BÀN TIỆC --}}
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
+
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
 <div class="paper-card">
+
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(212, 175, 55, 0.3) !important;">
+            <span class="badge fw-bold px-2 py-1" style="background: var(--accent-gold, #d4af37); color: #fff; font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
+        </div>
+    @endif
+
     <h4 class="font-serif fw-bold mb-1" style="color: var(--accent-gold); letter-spacing: 1px; font-size: 1.1rem;">
         <i class="bi bi-search me-2"></i>TRA CỨU BÀN TIỆC
     </h4>
@@ -530,22 +551,25 @@
 
     <!-- Thanh tìm kiếm -->
     <div class="input-group shadow-sm">
-        <input id="guestSearchInput" 
+         <input id="guestNameInput"
                type="text" 
                class="form-control search-table-input rounded-start-pill px-3" 
                style="height: 42px;" 
-               data-card-id="{{ $card->id ?? '' }}" 
-               data-search-url="{{ route('rsvp.searchTable') }}" 
                placeholder="Hãy nhập tên của bạn...">
                
-        <button type="button" id="btnDoSearch" class="btn btn-gold-custom fw-bold px-4 rounded-end-pill" style="height: 42px;" onclick="doSearchTable()">
+        <button type="button" 
+                id="btnSearchSeat" 
+                class="btn btn-gold-custom fw-bold px-4 rounded-end-pill" 
+                style="height: 42px;" 
+                onclick="findSeat(event)">
             Tra Cứu
         </button>
     </div>
 
-    <!-- Khu vực hiển thị kết quả AJAX -->
-    <div id="guestSearchResultArea" class="mt-3 d-none"></div>
+    <!-- Khu vực hiển thị kết quả chuẩn -->
+    <div id="seatResultArea" class="mt-3"></div>
 </div>
+@endif
 
     {{-- KHỐI 5: ALBUM ẢNH CƯỚI --}}
     <div class="paper-card">
@@ -557,20 +581,43 @@
             <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500" alt="Gallery 4" onclick="previewImage(this.src)">
         </div>
     </div>
+ @if(!empty($card->wedding_video))
+    <div class="white-card">
+        <div class="card-header-title">VIDEO CƯỚI</div>
+        <video controls class="w-100 rounded">
+            <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
+        </video>
+    </div>
+    @endif
 
-    {{-- KHỐI 6: LỜI NHẮN LƯU BÚT (GUESTBOOK) --}}
+   {{-- WEDDING MOMENTS --}}
+<div class="white-card">
+    <div class="card-header-title">Wedding Moments</div>
+    <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+
+    {{-- Form gửi ảnh thật về Server --}}
+            <form action="{{ route('guest.upload_photo', $card->id ?? 7) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="photos[]" class="form-control" accept="image/*" multiple required>
+        <button type="submit" class="btn btn-danger mt-3">Tải ảnh</button>
+    </form>
+</div>
+
+   {{-- KHỐI 6: LỜI NHẮN LƯU BÚT --}}
     <div class="paper-card">
-        <h4 class="font-serif fw-bold mb-3" style="color: var(--accent-gold); letter-spacing: 1px;"><i class="bi bi-chat-heart me-2"></i>SỔ LƯU BÚT</h4>
+        <h4 class="font-serif fw-bold mb-3" style="color: var(--accent-gold); letter-spacing: 1px;">
+            <i class="bi bi-chat-heart me-2"></i>LỜI CHÚC MỪNG
+        </h4>
         
-        <div id="wishesContainer">
-            <div class="wish-box">
-                <strong class="d-block text-warning small">Anh Tuấn & Chị Mai</strong>
-                <span class="text-muted small">"Chúc hai em trăm năm hạnh phúc, sớm có quý tử nha!"</span>
+        <div id="wishesContainer" class="mb-3">
+            <div class="wish-box p-3">
+                <strong class="d-block text-warning small">Bạn bè thân thiết</strong>
+                <span class="text-light small">Chúc hai bạn trăm năm hạnh phúc, sớm có con bồng cháu bế nhé! ❤️</span>
             </div>
         </div>
 
-        <button class="btn btn-outline-warning w-100 rounded-pill py-2 small fw-bold mt-2" data-bs-toggle="modal" data-bs-target="#wishModal">
-            <i class="bi bi-pencil-square me-1"></i> GỬI LỜI CHÚC MỪNG
+        <button class="btn btn-gold-custom w-100 rounded-pill py-2.5 fw-bold" data-bs-toggle="modal" data-bs-target="#wishModal">
+            <i class="bi bi-pencil-square me-1"></i> GỬI LỜI CHÚC & ẢNH KỶ NIỆM
         </button>
     </div>
 
@@ -611,19 +658,18 @@
         <p class="small text-muted italic mt-3 mb-0" data-field="thank_msg">"{{ $card->thank_msg ?? 'Sự hiện diện của bạn là niềm hạnh phúc lớn nhất của chúng mình!' }}"</p>
     </div>
 
-</div>
+</div> {{-- ĐÓNG CARD-CONTAINER --}}
 
-{{-- MODAL RSVP --}}
+{{-- TẤT CẢ MODAL ĐẶT NGOÀI CONTAINER --}}
+
+{{-- 1. MODAL RSVP --}}
 <div class="modal fade" id="rsvpModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border border-warning bg-dark text-light shadow">
             <div class="modal-body p-4 text-start">
                 <h5 class="fw-bold text-center text-warning mb-3 font-serif fs-4">Xác Nhận Tham Dự</h5>
-                 <form id="rsvpForm"
-      action="{{ isset($card->slug) ? route('wedding.rsvp', $card->slug) : '#' }}"
-      method="POST">
-
-    @csrf
+                <form id="rsvpForm" action="{{ isset($card->slug) ? route('wedding.rsvp', $card->slug) : '#' }}" method="POST">
+                    @csrf
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Họ và tên của bạn</label>
                         <input type="text" name="name" class="form-control rounded-3" required placeholder="Nhập tên của bạn">
@@ -659,21 +705,59 @@
     </div>
 </div>
 
-{{-- MODAL GỬI LỜI CHÚC --}}
+{{-- 2. MODAL GỬI LỜI CHÚC, ẢNH & GHI ÂM --}}
 <div class="modal fade" id="wishModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border border-warning bg-dark text-light shadow">
             <div class="modal-body p-4 text-start">
                 <h5 class="fw-bold text-center text-warning mb-3 font-serif fs-4">Gửi Lời Chúc Mừng</h5>
-                <form id="wishForm">
+                
+                <form id="wishForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Tên của bạn</label>
                         <input type="text" id="wish_name" class="form-control bg-secondary text-light border-0 rounded-pill px-3" required placeholder="Nhập tên của bạn">
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Lời chúc mừng</label>
                         <textarea id="wish_text" class="form-control bg-secondary text-light border-0 rounded-3 px-3" rows="3" required placeholder="Nhập lời chúc tốt đẹp nhất..."></textarea>
                     </div>
+
+                    {{-- 1. Ô CHỌN ẢNH KỶ NIỆM --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-warning">
+                            <i class="bi bi-camera-fill me-1"></i> Gửi ảnh kỷ niệm (không bắt buộc)
+                        </label>
+                        <input type="file" id="wish_image" accept="image/*" class="form-control bg-secondary text-light border-0 rounded-3">
+                    </div>
+
+                    {{-- 2. KHỐI GHI ÂM TRỰC TIẾP & CHỌN FILE ÂM THANH --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-warning">
+                            <i class="bi bi-mic-fill me-1"></i> Gửi kèm Giọng nói / Lời chúc âm thanh
+                        </label>
+                        
+                        {{-- Nút bấm Ghi âm --}}
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <button type="button" id="btnRecord" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                                <i class="bi bi-record-circle me-1"></i> Bấm để ghi âm
+                            </button>
+                            <span id="recordTimer" class="small text-danger fw-bold d-none">00:00</span>
+                        </div>
+
+                        {{-- Khung nghe lại bản ghi âm trực tiếp --}}
+                        <div id="audioPreviewWrapper" class="mb-2 d-none">
+                            <audio id="audioPreview" controls style="max-width: 100%; height: 36px;"></audio>
+                            <button type="button" id="btnDeleteRecord" class="btn btn-sm btn-link text-danger p-0 ms-2 text-decoration-none">
+                                <i class="bi bi-trash"></i> Ghi lại
+                            </button>
+                        </div>
+
+                        {{-- Tải file âm thanh có sẵn --}}
+                        <input type="file" id="wish_voice" accept="audio/*" class="form-control bg-secondary text-light border-0 rounded-3">
+                        <small class="text-sub d-block mt-1 opacity-75" style="font-size: 0.75rem;">(Hoặc chọn file MP3, WAV, M4A... có sẵn)</small>
+                    </div>
+
                     <button type="submit" class="btn btn-gold-custom w-100 rounded-pill py-2 fw-bold">GỬI LỜI CHÚC</button>
                 </form>
             </div>
@@ -716,29 +800,76 @@
         if (src) window.open(src, '_blank');
     }
 
-    // 5. Xử lý Form gửi lời chúc
-    document.getElementById('wishForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const nameEl = document.getElementById('wish_name');
-        const textEl = document.getElementById('wish_text');
-        
-        if (!textEl || !textEl.value.trim()) return;
+   // 5. Xử lý Form gửi lời chúc, upload ảnh kỷ niệm & ghi âm/audio
+document.getElementById('wishForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const nameEl = document.getElementById('wish_name');
+    const textEl = document.getElementById('wish_text');
+    const imageEl = document.getElementById('wish_image');
+    const voiceEl = document.getElementById('wish_voice'); // File ghi âm tải lên (nếu có)
+    
+    if (!textEl || !textEl.value.trim()) return;
+
+    const name = nameEl && nameEl.value.trim() ? nameEl.value : 'Ẩn danh';
+    const text = textEl.value;
+    const imgFile = imageEl && imageEl.files ? imageEl.files[0] : null;
+    const voiceFile = voiceEl && voiceEl.files ? voiceEl.files[0] : null;
+
+    // Hàm chèn lời chúc + ảnh + audio vào giao diện
+    const renderWish = (imgSrc = null, audioSrc = null) => {
+        const imgHTML = imgSrc 
+            ? `<div class="mt-2"><img src="${imgSrc}" class="img-fluid rounded-3 border border-warning shadow-sm" style="max-height: 220px; width: 100%; object-fit: cover; cursor: pointer;" onclick="previewImage('${imgSrc}')"></div>` 
+            : '';
+
+        const audioHTML = audioSrc 
+            ? `<div class="mt-2"><audio controls style="width: 100%; height: 36px;"><source src="${audioSrc}"></audio></div>` 
+            : '';
 
         const wishHTML = `
-            <div class="wish-box mb-2 p-2 bg-light rounded">
-                <strong class="d-block text-dark small">${nameEl ? nameEl.value : 'Ẩn danh'}</strong>
-                <span class="text-muted small">"${textEl.value}"</span>
+            <div class="wish-box mb-3 p-3">
+                <strong class="d-block text-warning small">${name}</strong>
+                <span class="text-light small">${text}</span>
+                ${imgHTML}
+                ${audioHTML}
             </div>
         `;
+        
         document.getElementById('wishesContainer')?.insertAdjacentHTML('beforeend', wishHTML);
-        
         alert('Cảm ơn lời chúc thân thương của bạn nhé! ❤️');
-        this.reset();
         
+        // Reset form & xóa dữ liệu ghi âm tạm thời
+        this.reset();
+        recordedAudioBlob = null;
+        const audioPreview = document.getElementById('audioPreview');
+        if (audioPreview) audioPreview.src = '';
+        document.getElementById('audioPreviewWrapper')?.classList.add('d-none');
+        
+        // Đóng Modal
         const modalEl = document.getElementById('wishModal');
         if (modalEl && window.bootstrap) {
             bootstrap.Modal.getInstance(modalEl)?.hide();
         }
-    });
+    };
+
+    // Xác định nguồn audio: Ưu tiên bản ghi âm trực tiếp, nếu không có thì lấy file tải lên
+    let finalAudioSrc = null;
+    if (typeof recordedAudioBlob !== 'undefined' && recordedAudioBlob) {
+        finalAudioSrc = URL.createObjectURL(recordedAudioBlob);
+    } else if (voiceFile) {
+        finalAudioSrc = URL.createObjectURL(voiceFile);
+    }
+
+    // Đọc File Ảnh nếu có chọn
+    if (imgFile) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            renderWish(event.target.result, finalAudioSrc);
+        };
+        reader.readAsDataURL(imgFile);
+    } else {
+        renderWish(null, finalAudioSrc);
+    }
+});
 </script>
 @endpush

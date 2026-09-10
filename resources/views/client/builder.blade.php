@@ -221,18 +221,25 @@ value="{{ old('groom_name', $card->groom_name) }}">
                             <label class="form-label small fw-semibold">Upload Ảnh Bìa Thiệp</label>
                             <input type="file" id="input_cover_img" name="cover_img" class="form-control form-control-sm" accept="image/*">
                         </div>
+                        <div class="mb-2">
+        <label class="form-label small fw-semibold">Upload Album Kỷ Niệm (Chọn nhiều ảnh)</label>
+        <input type="file" id="input_album_imgs" name="album_imgs[]" class="form-control form-control-sm" accept="image/*" multiple>
+        <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Giữ phím <b>Ctrl</b> (hoặc chọn nhiều ảnh) để tải bộ album cưới.</small>
+    </div>
                     </div>
 
                     <div class="card p-3 mb-3 border-0 bg-light rounded-3 vip-feature-wrapper">
-                        @if(!$isVip)
-                            <div class="vip-lock-overlay" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal">
-                                <i class="bi bi-lock-fill text-warning fs-3 mb-1"></i>
-                                <span class="fw-bold text-dark small">Mở khóa tính năng VietQR Mừng Cưới</span>
-                                <span class="badge bg-warning text-dark mt-1">Nâng VIP 99k</span>
-                            </div>
-                        @endif
+    @if(!$isVip)
+        <!-- Cảnh báo dùng thử nhỏ gọn -->
+        <div class="alert alert-warning py-2 px-3 mb-3 border-0 rounded-3 d-flex align-items-center justify-content-between small">
+            <span><i class="bi bi-info-circle-fill me-1"></i> Bạn đang dùng thử tính năng VIP</span>
+            <button type="button" class="btn btn-warning btn-sm py-0 px-2 fw-bold" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal" style="font-size: 0.75rem;">
+                👑 Nâng VIP
+            </button>
+        </div>
+    @endif
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-qr-code-scan me-2"></i>Mừng Cưới & Mã VietQR</h6>
                             <span class="badge-vip">👑 Gói VIP</span>
                         </div>
@@ -250,25 +257,27 @@ value="{{ old('groom_name', $card->groom_name) }}">
                     </div>
 
                     <div class="card p-3 mb-3 border-0 bg-light rounded-3 vip-feature-wrapper">
-                        @if(!$isVip)
-                            <div class="vip-lock-overlay" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal">
-                                <i class="bi bi-lock-fill text-warning fs-3 mb-1"></i>
-                                <span class="fw-bold text-dark small">Mở khóa Upload Nhạc & Voice Lời Mời</span>
-                                <span class="badge bg-warning text-dark mt-1">Nâng VIP 99k</span>
-                            </div>
-                        @endif
+    @if(!$isVip)
+        <!-- Cảnh báo dùng thử nhỏ gọn -->
+        <div class="alert alert-warning py-2 px-3 mb-3 border-0 rounded-3 d-flex align-items-center justify-content-between small">
+            <span><i class="bi bi-info-circle-fill me-1"></i> Bạn đang dùng thử tính năng VIP</span>
+            <button type="button" class="btn btn-warning btn-sm py-0 px-2 fw-bold" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal" style="font-size: 0.75rem;">
+                👑 Nâng VIP
+            </button>
+        </div>
+    @endif
 
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-music-note-beamed me-2"></i>Nhạc Nền & Voice Lời Mời</h6>
                             <span class="badge-vip">👑 Gói VIP</span>
                         </div>
                         <div class="mb-2">
                             <label class="form-label small fw-semibold">Upload Nhạc Nền Riêng (.mp3)</label>
-                            <input type="file" name="custom_music" class="form-control form-control-sm" accept="audio/*">
+                            <input type="file" name="bg_music" class="form-control form-control-sm" accept="audio/*">
                         </div>
                         <div class="mb-2">
                             <label class="form-label small fw-semibold">Upload Voice Lời Mời (.mp3)</label>
-                            <input type="file" name="custom_voice" class="form-control form-control-sm" accept="audio/*">
+                            <input type="file" name="voice_invite" class="form-control form-control-sm" accept="audio/*">
                         </div>
                     </div>
 
@@ -304,67 +313,67 @@ rows="2">{{ old('thank_msg', $card->thank_msg) }}</textarea>
     </div>
 
     <div class="modal fade" id="vipUpgradeModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
-                <div class="modal-header border-0 bg-dark text-white p-4 rounded-top-4">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-gem text-warning me-2"></i>Nâng Cấp VIP - Trải Nghiệm Thiệp Trọn Vẹn</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle text-center">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="text-start">Tính năng</th>
-                                    <th>🆓 Miễn phí (Free)</th>
-                                    <th class="bg-warning-subtle text-dark">👑 VIP (99.000đ)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="small">
-                                <tr>
-                                    <td class="text-start fw-semibold">Kho Mẫu Thiệp</td>
-                                    <td>Cơ bản (Basic)</td>
-                                    <td class="bg-warning-subtle fw-bold text-success">Mở toàn bộ Premium/Luxury</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-semibold">Xóa Watermark Bản Quyền</td>
-                                    <td>❌ Dính Watermark</td>
-                                    <td class="bg-warning-subtle fw-bold text-success">✅ Xóa hoàn toàn</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-semibold">Mã VietQR Chuyển Khoản</td>
-                                    <td>Hiện STK chữ</td>
-                                    <td class="bg-warning-subtle fw-bold text-success">✅ Tự sinh VietQR thông minh</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-semibold">Nhạc Nền & Voice Lời Mời</td>
-                                    <td>Nhạc mặc định</td>
-                                    <td class="bg-warning-subtle fw-bold text-success">✅ Đổi nhạc MP3 & Upload Voice</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-start fw-semibold">Thời Gian Chỉnh Sửa</td>
-                                    <td>Trong 24 giờ</td>
-                                    <td class="bg-warning-subtle fw-bold text-success">✅ Thoải mái chỉnh sửa trọn đời</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-center mt-3">
-                        <button type="button" id="btnConfirmPayVip" class="btn btn-warning btn-lg rounded-pill fw-bold px-5 py-2 shadow">
-                            💳 Thanh Toán Nâng Cấp VIP (99.000đ)
-                        </button>
-                    </div>
-                </div>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 bg-dark text-white p-4 rounded-top-4">
+                <h5 class="modal-title fw-bold"><i class="bi bi-gem text-warning me-2"></i>Nâng Cấp Gói Dịch Vụ</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-        </div>
+            <!-- MODAL NÂNG CẤP GÓI (GỌN ĐẸP 2 CỘT) -->
+<div class="modal-body p-4">
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center mb-4">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-start" style="width: 40%;">Tính năng</th>
+                    <th style="width: 30%;">🆓 Miễn Phí</th>
+                    <th class="bg-warning bg-opacity-10 text-dark" style="width: 30%;">👑 VIP PRO (199k)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start fw-semibold">Kho Mẫu Thiệp</td>
+                    <td>Cơ bản</td>
+                    <td class="text-success fw-bold">Mở toàn bộ Mẫu</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-semibold">Xóa Watermark Bản Quyền</td>
+                    <td class="text-danger">❌ Có Watermark</td>
+                    <td class="text-success fw-bold">✅ Xóa hoàn toàn</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-semibold">VietQR Mừng Cưới & Nhạc MP3</td>
+                    <td class="text-danger">❌ Mờ QR / Nhạc chung</td>
+                    <td class="text-success fw-bold">✅ VietQR Tự Động & MP3 Riêng</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-semibold">Voice Lời Mời & Lời Cảm Ơn</td>
+                    <td class="text-danger">❌ Khóa</td>
+                    <td class="text-success fw-bold">✅ Upload Voice riêng</td>
+                </tr>
+                <tr>
+                    <td class="text-start fw-semibold">Sơ đồ & Tra cứu Bàn Tiệc RSVP</td>
+                    <td class="text-danger">❌ Khóa</td>
+                    <td class="text-success fw-bold">✅ Tra cứu bàn thông minh</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
+    <div class="text-center">
+    <button type="button" class="btn btn-warning btn-lg fw-bold rounded-pill px-5 shadow" onclick="openPaymentModal('vip_pro', 199000)">
+        👑 Nâng Cấp VIP PRO Ngay (Chỉ 199.000đ)
+    </button>
+</div>
+</div>
+</div>
+        </div>
+    </div>
     <div class="modal fade" id="vietqrPaymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-4 shadow-lg">
                 <div class="modal-header bg-warning text-dark border-0 p-3 rounded-top-4">
-                    <h6 class="modal-title fw-bold"><i class="bi bi-qr-code-scan me-2"></i>Thanh Toán Nâng Cấp VIP (99.000đ)</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h6 class="modal-title fw-bold" id="displayModalTitle"><i class="bi bi-qr-code-scan me-2"></i>Thanh Toán Nâng Cấp VIP</h6>                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center p-4">
                     <p class="text-muted small mb-2">Mở App Ngân hàng hoặc Ví điện tử bất kỳ để quét mã QR bên dưới:</p>
@@ -388,7 +397,7 @@ rows="2">{{ old('thank_msg', $card->thank_msg) }}</textarea>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <span class="text-muted">Số tiền:</span>
-                            <strong class="text-danger fs-6">99.000 VNĐ</strong>
+                            <strong class="text-danger fs-6" id="displayAmountText">99.000 VNĐ</strong>
                         </div>
                         <div class="d-flex justify-content-between">
                             <span class="text-muted">Nội dung CK:</span>
@@ -629,7 +638,7 @@ function bindImageToIframe(inputId, fieldName) {
                 let formData = new FormData(builderForm);
                 let csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 let csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
+                formData.append('is_vip', '1');
                 fetch("{{ route('wedding.store') }}", {
                     method: 'POST',
                     headers: {
@@ -662,153 +671,76 @@ return response.json();
                         const isLoggedIn = document.querySelector('meta[name="user-logged-in"]')?.getAttribute('content') === 'true';
 
                         // KIỂM TRA ĐĂNG NHẬP
-                        if (!isLoggedIn || data.is_guest) {
-                            // 🌟 CÁCH 1: KHÁCH CHƯA ĐĂNG NHẬP -> TẠO XONG NGHỆ THUẬT VÀ HIỆN POP-UP GIỮ CHÂN!
-                        // Đoạn JS hiển thị SweetAlert2 khi tạo thiệp thành công
+                  if (!isLoggedIn || data.is_guest) {
+    // 1. Lấy giá trị của các ô nhập VIP
+    // Kiểm tra dữ liệu VIP nhập ở cột trái
+const bankAccount = document.querySelector('input[name="bank_account_number"]')?.value?.trim();
+const musicFile = document.querySelector('input[name="music_file"]')?.files?.length;
+const voiceFile = document.querySelector('input[name="voice_file"]')?.files?.length;
+const hasVipData = (bankAccount && bankAccount !== '') || musicFile > 0 || voiceFile > 0;
+
+// Chuẩn bị khung thông báo VIP
+const vipAlertHtml = hasVipData ? `
+    <div class="alert alert-warning text-start small mb-2 p-2" style="background: #fffbeb; border-color: #fde68a; color: #92400e;">
+        👑 <b>Tính năng VIP:</b> Bạn vừa nhập dữ liệu VIP (VietQR/Nhạc/Voice). Hãy <b>Nâng cấp VIP</b> để duy trì các tính năng này khi gửi thiệp nhé!
+    </div>
+` : '';
+
 Swal.fire({
     icon: 'success',
     title: 'Thiệp cưới đã tạo thành công! 🎉',
-
     html: `
-        <p style="margin-bottom: 8px; font-size: 15px;">
-            Thiệp của bạn đã sẵn sàng!
-        </p>
-
-        <div style="
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin: 15px 0;
-        ">
-            <input
-                id="weddingLinkInput"
-                type="text"
-                value="${finalUrl}"
-                readonly
-                style="
-                    flex: 1;
-                    height: 42px;
-                    border: 1px solid #ddd;
-                    border-radius: 8px;
-                    padding: 8px 10px;
-                    font-size: 13px;
-                    background: #f8f9fa;
-                    color: #333;
-                "
-            >
-
-            <button
-                type="button"
-                id="btnCopyWeddingLink"
-                style="
-                    height: 42px;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 0 14px;
-                    background: #e11d48;
-                    color: white;
-                    font-weight: 600;
-                    cursor: pointer;
-                "
-            >
-                📋 Copy
-            </button>
+        <p style="margin-bottom: 8px; font-size: 14px; color: #475569;">Link thiệp của bạn:</p>
+        <div style="display: flex; gap: 6px; margin-bottom: 15px;">
+            <input id="weddingLinkInput" type="text" value="${finalUrl}" readonly class="form-control form-control-sm" style="background: #f8f9fa;">
+            <button type="button" id="btnCopyWeddingLink" class="btn btn-pink btn-sm text-nowrap" style="background: #e11d48; color: #fff;">📋 Sao chép</button>
         </div>
 
-        <div style="
-            background: #fff3cd;
-            color: #856404;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: left;
-            line-height: 1.5;
-        ">
-            ⚠️ <b>Đăng ký / Đăng nhập</b> để lưu thiệp vào tài khoản,
-            quản lý và chỉnh sửa thiệp sau này.
+        ${vipAlertHtml}
+
+        <div class="alert alert-info text-start small mb-2 p-2" style="background: #e0f2fe; border-color: #bae6fd; color: #0369a1;">
+            🔑 <b>Lưu thiệp:</b> Hãy <b>Đăng ký / Đăng nhập</b> tài khoản để quản lý và chỉnh sửa thiệp sau này.
         </div>
-        <button
-    type="button"
-    id="btnViewWedding"
-    style="
-        width: 100%;
-        margin-top: 12px;
-        height: 42px;
-        border: 1px solid #e11d48;
-        border-radius: 8px;
-        background: #fff;
-        color: #e11d48;
-        font-weight: 600;
-        cursor: pointer;
-    "
->
-    💌 Xem thiệp
-</button>
+
+        <button type="button" id="btnViewWedding" class="btn btn-outline-danger w-100 btn-sm mt-1 fw-bold" style="border-color: #e11d48; color: #e11d48;">
+            💌 Xem thiệp ngay
+        </button>
     `,
-
-    showCancelButton: false,
-confirmButtonColor: '#e11d48',
-confirmButtonText: '🔑 Đăng ký / Đăng nhập',
-allowOutsideClick: false,
-
+    showCancelButton: true,
+    confirmButtonColor: '#e11d48',
+    cancelButtonColor: '#f59e0b',
+    confirmButtonText: '🔑 Đăng ký / Đăng nhập',
+    cancelButtonText: '👑 Nâng Cấp VIP Ngay',
+    allowOutsideClick: false,
     didOpen: () => {
-
         const copyBtn = document.getElementById('btnCopyWeddingLink');
         const linkInput = document.getElementById('weddingLinkInput');
-
         if (copyBtn && linkInput) {
-
             copyBtn.addEventListener('click', async function () {
-
-                try {
-
-                    await navigator.clipboard.writeText(linkInput.value);
-
-                    copyBtn.innerHTML = '✅ Đã sao chép thành công';
-
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '📋 Sao chép';
-                    }, 2000);
-
-                } catch (error) {
-
-                    linkInput.select();
-                    document.execCommand('copy');
-
-                    copyBtn.innerHTML = '✅ Đã sao chép thành công';
-
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '📋 Sao chép';
-                    }, 2000);
-                }
-
+                await navigator.clipboard.writeText(linkInput.value);
+                copyBtn.innerHTML = '✅ Đã chép';
+                setTimeout(() => { copyBtn.innerHTML = '📋 Sao chép'; }, 2000);
             });
-
         }
-            const viewWeddingBtn = document.getElementById('btnViewWedding');
 
-    if (viewWeddingBtn) {
-        viewWeddingBtn.addEventListener('click', function () {
-
-            if (finalUrl) {
-                window.open(finalUrl, '_blank');
-            }
-
-        });
+        const viewWeddingBtn = document.getElementById('btnViewWedding');
+        if (viewWeddingBtn) {
+            viewWeddingBtn.addEventListener('click', function () {
+                if (finalUrl) window.open(finalUrl, '_blank');
+            });
+        }
     }
-
-    }
-
 }).then((result) => {
-
     if (result.isConfirmed) {
-
         window.location.href = "{{ route('login') }}";
-
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+        const vipModalEl = document.getElementById('vipUpgradeModal');
+        if (vipModalEl) {
+            bootstrap.Modal.getOrCreateInstance(vipModalEl).show();
+        }
     }
-
 });
-                        } else {
+                } else {
                             // 🌟 ĐÃ ĐĂNG NHẬP -> HIỆN THÔNG BÁO XEM THIỆP
                             Swal.fire({
                                 icon: 'success',
@@ -869,49 +801,126 @@ allowOutsideClick: false,
 }
 
         // 4. MỞ MODAL THANH TOÁN VIETQR
-        const btnConfirmPayVip = document.getElementById('btnConfirmPayVip');
+       // 4. XỬ LÝ NÚT KIỂM TRA THANH TOÁN (ĐÃ FIX SẠCH LỖI ĐƠ)
         const btnCheck = document.getElementById('btnCheckPaymentStatus');
 
-if(btnCheck){
-
-    btnCheck.addEventListener('click',function(){
-
-        Swal.fire({
-            icon:'info',
-            title:'Đang kiểm tra thanh toán...',
-            text:'Chức năng này sẽ kết nối backend sau.'
-        });
-
-    });
-
-}
-        if (btnConfirmPayVip) {
-            btnConfirmPayVip.addEventListener('click', function(e) {
+        if (btnCheck) {
+            btnCheck.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                const BANK_ID = "{{ config('services.vietqr.bank_id', 'MB') }}";
-                const ACCOUNT_NO = "{{ config('services.vietqr.account_no') }}";
-                const AMOUNT = 99000; 
-                let cardId = Math.floor(Math.random() * 8999) + 1000; 
-                let memo = 'VIP ' + cardId;
-
-                let qrApiUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${AMOUNT}&addInfo=${encodeURIComponent(memo)}`;
-
-                document.getElementById('vietqrImg').src = qrApiUrl;
-                document.getElementById('displayMemo').innerText = memo;
-
-                // Ẩn modal cũ, mở modal VietQR
-                let vipModalEl = document.getElementById('vipUpgradeModal');
-                if(vipModalEl) {
-                    let modalVip = bootstrap.Modal.getInstance(vipModalEl);
-                    if(modalVip) modalVip.hide();
+                let form = document.getElementById('builderForm');
+                if (!form) {
+                    Swal.fire('Lỗi', 'Không tìm thấy Form dữ liệu thiệp!', 'error');
+                    return;
                 }
 
-                let qrModalEl = document.getElementById('vietqrPaymentModal');
-                if(qrModalEl) {
-                    let modalQr = bootstrap.Modal.getOrCreateInstance(qrModalEl);
-                    modalQr.show();
-                }
+                let formData = new FormData(form);
+
+                // Đánh dấu gói VIP dựa theo nội dung CK (STD hoặc VIP)
+                let memoText = document.getElementById('displayMemo')?.innerText || '';
+                let targetPackage = memoText.startsWith('STD') ? 'standard' : 'vip_pro';
+                formData.append('package_type', targetPackage);
+
+                // Hiển thị trạng thái đang kiểm tra
+                Swal.fire({
+                    title: 'Đang xác thực giao dịch...',
+                    text: 'Hệ thống đang kiểm tra giao dịch chuyển khoản của bạn, vui lòng đợi trong giây lát!',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Gửi Request về Server
+                fetch("{{ route('wedding.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Lỗi kết nối Server (' + response.status + ')');
+                    }
+                    return response.json();
+                })
+               .then(data => {
+    if (data.success) {
+        let qrModalEl = document.getElementById('vietqrPaymentModal');
+        if (qrModalEl) {
+            bootstrap.Modal.getInstance(qrModalEl)?.hide();
+        }
+
+        const finalUrl = data.share_url || data.card_url || data.url || data.public_url;
+
+        // 1. CẬP NHẬT GIAO DIỆN MÀN HÌNH BUILDER SANG VIP
+        const statusBadge = document.getElementById('cardStatusBadge');
+        if (statusBadge) {
+            statusBadge.className = 'badge bg-warning text-dark rounded-pill ms-2 fw-bold';
+            statusBadge.innerHTML = '👑 Đã Nâng VIP';
+        }
+        
+        const btnVipHeader = document.querySelector('button[data-bs-target="#vipUpgradeModal"]');
+        if (btnVipHeader) {
+            btnVipHeader.classList.add('d-none');
+        }
+
+        document.querySelectorAll('.alert-warning').forEach(el => el.classList.add('d-none'));
+
+        // 2. RELOAD IFRAME PREVIEW ĐỂ HIỂN THỊ KHỐI BÀN TIỆC VIP
+        if (previewFrame) {
+            previewFrame.src = previewFrame.src;
+        }
+
+        // 3. THÊM NÚT "TIẾP TỤC CHỈNH SỬA" TRONG POPUP
+        Swal.fire({
+    icon: 'success',
+    title: 'Nâng Cấp Gói VIP Thành Công! 🎉', // Đã đổi tiêu đề chuẩn hơn
+    html: `
+        <p class="text-muted mb-2">Thiệp của bạn đã mở khóa trọn bộ tính năng VIP!</p>
+        <div class="input-group mb-3">
+            <input type="text" id="vipCardLink" class="form-control form-control-sm" value="${finalUrl}" readonly>
+            <button class="btn btn-outline-primary btn-sm" type="button" id="btnCopyVipUrl">📋 Copy Link</button>
+        </div>
+    `,
+    showCancelButton: true,
+    confirmButtonColor: '#e11d48',
+    cancelButtonColor: '#475569',
+    confirmButtonText: '💌 Xem Thiệp Ngay',
+    cancelButtonText: '✏️ Tiếp Tục Chỉnh Sửa',
+    allowOutsideClick: false,
+    didOpen: () => {
+        document.getElementById('btnCopyVipUrl')?.addEventListener('click', function() {
+            let copyInput = document.getElementById('vipCardLink');
+            copyInput.select();
+            navigator.clipboard.writeText(copyInput.value);
+            this.innerText = '✅ Đã Copy';
+            setTimeout(() => { this.innerText = '📋 Copy Link'; }, 2000);
+        });
+    }
+}).then((result) => {
+    if (result.isConfirmed && finalUrl) {
+        window.open(finalUrl, '_blank');
+    }
+});
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Chưa nhận được thanh toán',
+            text: data.message || 'Hệ thống chưa ghi nhận giao dịch chuyển khoản. Vui lòng kiểm tra lại nội dung chuyển khoản hoặc đợi 1-2 phút nhé!'
+        });
+    }
+})
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Có lỗi xảy ra',
+                        text: error.message || 'Không thể kết nối đến máy chủ.'
+                    });
+                });
             });
         }
     });
@@ -1038,5 +1047,43 @@ if (locInput) {
     });
 }
     </script>
+<script>
+    function openPaymentModal(packageType, price) {
+    const BANK_ID = "{{ config('services.vietqr.bank_id', 'MB') }}";
+    const ACCOUNT_NO = "{{ config('services.vietqr.account_no') }}";
+    
+    // Lấy ID thiệp hiện tại hoặc tạo ID ngẫu nhiên nếu chưa lưu
+    let cardId = document.querySelector('input[name="card_id"]')?.value || Math.floor(Math.random() * 8999) + 1000;
+    
+    // Cú pháp nội dung CK: "STD 1234" hoặc "VIP 1234"
+    let prefix = (packageType === 'standard') ? 'STD' : 'VIP';
+    let memo = `${prefix} ${cardId}`;
+
+    // 1. Tạo Link VietQR chuẩn số tiền
+    let qrApiUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${price}&addInfo=${encodeURIComponent(memo)}`;
+
+    // 2. Gán ảnh QR và Nội dung CK
+    document.getElementById('vietqrImg').src = qrApiUrl;
+    document.getElementById('displayMemo').innerText = memo;
+
+    // 3. Định dạng lại số tiền và cập nhật chữ trên giao diện
+    let formattedPrice = new Intl.NumberFormat('vi-VN').format(price) + ' VNĐ';
+    let packageTitle = (packageType === 'standard') ? 'Gói STANDARD' : 'Gói VIP PRO';
+
+    document.getElementById('displayAmountText').innerText = formattedPrice;
+    document.getElementById('displayModalTitle').innerHTML = `<i class="bi bi-qr-code-scan me-2"></i>Thanh Toán ${packageTitle} (${formattedPrice})`;
+
+    // 4. Tráo Modal (Ẩn modal báo giá, hiện modal VietQR)
+    let vipModalEl = document.getElementById('vipUpgradeModal');
+    if (vipModalEl) {
+        bootstrap.Modal.getInstance(vipModalEl)?.hide();
+    }
+
+    let qrModalEl = document.getElementById('vietqrPaymentModal');
+    if (qrModalEl) {
+        bootstrap.Modal.getOrCreateInstance(qrModalEl).show();
+    }
+}
+</script>
 </body>
 </html>

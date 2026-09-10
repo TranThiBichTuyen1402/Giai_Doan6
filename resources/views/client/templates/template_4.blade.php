@@ -404,71 +404,100 @@
             </div>
         </div>
 
-        <!-- NỬA PHẢI: TRA CỨU BÀN TIỆC -->
-        <div class="side-right">
-            <div class="search-seat-card w-100 mx-3 p-4 rounded-4" style="max-width: 420px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2;">
-                <h3 class="text-white text-uppercase fs-6 fw-bold mb-2">
-                    <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
-                </h3>
-                <p class="small text-white-50 mb-3" style="font-size: 0.85rem;">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+       <!-- NỬA PHẢI: TRA CỨU BÀN TIỆC -->
+{{-- TRA CỨU BÀN TIỆC --}}
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
 
-                <div class="input-group search-input-group shadow-sm">
-                    <input id="guestSearchInput" 
-                           type="text" 
-                           class="form-control bg-dark text-white border-0 px-3" 
-                           style="font-size: 0.9rem; height: 42px;"
-                           data-card-id="{{ $card->id ?? '' }}" 
-                           data-search-url="{{ route('rsvp.searchTable') }}" 
-                           placeholder="Hãy nhập tên của bạn...">
-                           
-                    <button type="button" id="btnDoSearch" class="btn btn-warning fw-bold text-dark px-3 text-nowrap" style="font-size: 0.9rem; height: 42px; display: flex; align-items: center;">
-                        Tra Cứu
-                    </button>
-                </div>
-
-                <div id="guestSearchResultArea" class="mt-3"></div>
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
+<div class="side-right">
+    <div class="search-seat-card w-100 mx-3 p-4 rounded-4 position-relative" style="max-width: 420px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 2;">
+        
+        {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+        @if(!$isVipCard && $isEditorMode)
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-50">
+                <span class="badge bg-warning text-dark fw-bold px-2 py-1" style="font-size: 0.72rem;">
+                    👑 TÍNH NĂNG VIP
+                </span>
+                <small class="text-warning fst-italic" style="font-size: 0.75rem;">
+                    *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+                </small>
             </div>
-        </div>
-    </div>
+        @endif
 
+        <h3 class="text-white text-uppercase fs-6 fw-bold mb-2">
+            <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
+        </h3>
+        <p class="small text-white-50 mb-3" style="font-size: 0.85rem;">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+
+        <div class="input-group search-input-group shadow-sm">
+             <input id="guestNameInput"
+                   type="text" 
+                   class="form-control bg-dark text-white border-0 px-3" 
+                   style="font-size: 0.9rem; height: 42px;"
+                   placeholder="Hãy nhập tên của bạn...">
+                   
+            <button type="button" 
+                    id="btnSearchSeat" 
+                    onclick="findSeat(event)" 
+                    class="btn btn-warning fw-bold text-dark px-3 text-nowrap" 
+                    style="font-size: 0.9rem; height: 42px; display: flex; align-items: center;">
+                Tra Cứu
+            </button>
+        </div>
+
+        <div id="seatResultArea" class="mt-3"></div>
+    </div>
+</div>
+@endif
+<!-- ảnh cưới -->
     <div class="slide-item">
-        <div class="side-left">
-            <div class="content-box">
-                <span class="badge-tag">Gallery</span>
-                <h3 class="font-serif fw-bold mb-3">Album Kỷ Niệm</h3>
-                @php
-                    $album = is_string($card->album_imgs ?? null) ? json_decode($card->album_imgs, true) : ($card->album_imgs ?? []);
-                @endphp
-                <div class="row g-2">
-                    @if(!empty($album) && count($album) > 0)
-                        @foreach(array_slice($album, 0, 4) as $img)
-                            <div class="col-6"><img src="{{ asset($img) }}" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
-                        @endforeach
-                    @else
-                        <div class="col-6"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
-                        <div class="col-6"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
-                        <div class="col-6"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
-                        <div class="col-6"><img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="side-right">
-            <div class="content-box">
-                @if(!empty($card->wedding_video))
-                    <span class="badge-tag">Video</span>
-                    <h3 class="font-serif fw-bold mb-3">Cinematic</h3>
-                    <video controls class="w-100 rounded mb-3">
-                        <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
-                    </video>
+    <div class="side-left">
+        <div class="content-box">
+            <span class="badge-tag">Gallery</span>
+            <h3 class="font-serif fw-bold mb-3">Album Kỷ Niệm</h3>
+            @php
+                $album = is_string($card->album_imgs ?? null) ? json_decode($card->album_imgs, true) : ($card->album_imgs ?? []);
+            @endphp
+            <div class="row g-2">
+                @if(!empty($album) && count($album) > 0)
+                    @foreach(array_slice($album, 0, 4) as $img)
+                        <div class="col-6"><img src="{{ asset($img) }}" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
+                    @endforeach
+                @else
+                    <div class="col-6"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
+                    <div class="col-6"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
+                    <div class="col-6"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
+                    <div class="col-6"><img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300" class="img-fluid rounded" style="height:100px; object-fit:cover; width:100%;"></div>
                 @endif
-                <span class="badge-tag">Moments</span>
-                <p class="small text-muted mb-2">Chia sẻ khoảnh khắc đẹp cùng dâu rể</p>
-                <input type="file" id="momentImage" class="form-control form-control-sm rounded-pill mb-2" accept="image/*">
-                <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="uploadMoment()">Tải Ảnh Lên</button>
             </div>
         </div>
     </div>
+    <div class="side-right">
+        <div class="content-box">
+            @if(!empty($card->wedding_video))
+                <span class="badge-tag">Video</span>
+                <h3 class="font-serif fw-bold mb-3">Cinematic</h3>
+                <video controls class="w-100 rounded mb-3">
+                    <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
+                </video>
+            @endif
+            <span class="badge-tag">Moments</span>
+            <p class="small text-muted mb-2">Chia sẻ khoảnh khắc đẹp cùng dâu rể</p>
+
+            {{-- Form gửi dữ liệu thật về Backend --}}
+            <form action="{{ route('guest.upload_photo', $card->id ?? 4) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="file" name="photos[]" class="form-control form-control-sm rounded-pill mb-2" accept="image/*" multiple required>
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Tải Ảnh Lên</button>
+            </form>
+        </div>
+    </div>
+</div>
 
     <div class="slide-item">
         <div class="side-left">

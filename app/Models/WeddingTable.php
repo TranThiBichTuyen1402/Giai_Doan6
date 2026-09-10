@@ -23,4 +23,8 @@ class WeddingTable extends Model
     {
         return $this->hasMany(WeddingRsvp::class, 'table_id', 'id');
     }
+    public function guests()
+{
+    return $this->hasMany(WeddingRsvp::class, 'table_id', 'id'); 
+}
 }

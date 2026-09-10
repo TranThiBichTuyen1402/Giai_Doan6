@@ -27,6 +27,8 @@ class WeddingCard extends Model
         'groom_bank_name', 'groom_bank_acc', 'groom_bank_owner', 'groom_qr_code',
         'bride_bank_name', 'bride_bank_acc', 'bride_bank_owner', 'bride_qr_code',
         'user_id', 'is_paid',
+        'is_vip',
+        'package_type', 
     ];
 
     protected $casts = [

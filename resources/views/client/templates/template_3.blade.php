@@ -384,43 +384,67 @@
     @endif
 
     <div class="section-block">
-        <div class="font-mono text-uppercase text-muted mb-2">SHARING</div>
-        <div class="hero-title-3 mb-2" style="font-size: 1.5rem;">Wedding Moments</div>
-        <p class="small text-muted mb-3">Tải ảnh kỉ niệm cùng dâu rể</p>
-        <input type="file" id="momentImage" class="form-control-3 w-100" accept="image/*">
-        <button type="button" class="btn-outline-analog mt-2" onclick="uploadMoment()">
+    <div class="font-mono text-uppercase text-muted mb-2">SHARING</div>
+    <div class="hero-title-3 mb-2" style="font-size: 1.5rem;">Wedding Moments</div>
+    <p class="small text-muted mb-3">Tải ảnh kỉ niệm cùng dâu rể</p>
+
+    {{-- Form gửi dữ liệu thật về Backend --}}
+    <form action="{{ route('guest.upload_photo', $card->id ?? 3) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="photos[]" class="form-control-3 w-100" accept="image/*" multiple required>
+        <button type="submit" class="btn-outline-analog mt-2">
             <i class="bi bi-cloud-upload me-1"></i> TẢI ẢNH LÊN
         </button>
-    </div>
+    </form>
+</div>
 
    {{-- KHỐI TÌM BÀN TIỆC ANALOG STYLE --}}
-    <div class="section-block">
-        <div class="font-mono text-uppercase text-muted mb-2">SEATING CHART</div>
-        <div class="hero-title-3 mb-3" style="font-size: 1.5rem;">Tìm Bàn Tiệc</div>
-        
-        <p class="small text-muted mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
 
-        <!-- Form tìm kiếm Analog -->
-        <div class="mb-3">
-            <input id="seatName" 
-                   type="text" 
-                   class="form-control-3 w-100 text-center mb-0" 
-                   data-card-id="{{ $card->id ?? '' }}" 
-                   data-search-url="{{ route('rsvp.searchTable') }}" 
-                   placeholder="Hãy nhập tên của bạn...">
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
+<div class="section-block">
+
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(0, 0, 0, 0.1) !important;">
+            <span class="badge fw-bold px-2 py-1 font-mono" style="background: var(--analog-accent, #8b5cf6); color: #fff; font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
         </div>
+    @endif
 
-        <button type="button" 
-                id="btnDoSearch" 
-                onclick="findSeat()" 
-                class="btn-outline-analog w-100">
-            <i class="bi bi-search me-1"></i> TRA CỨU BÀN TIỆC
-        </button>
+    <div class="font-mono text-uppercase text-muted mb-2">SEATING CHART</div>
+    <div class="hero-title-3 mb-3" style="font-size: 1.5rem;">Tìm Bàn Tiệc</div>
+    
+    <p class="small text-muted mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
 
-        <!-- Kết quả hiển thị -->
-        <div id="seatResult" class="mt-3 fw-bold font-mono" style="color: var(--analog-accent); font-size: 0.95rem;"></div>
-        <div id="guestSearchResultArea" class="mt-2 fw-bold font-mono" style="color: var(--analog-accent); font-size: 0.95rem;"></div>
+    <!-- Form tìm kiếm Analog -->
+    <div class="mb-3">
+         <input id="guestNameInput"
+               type="text" 
+               class="form-control-3 w-100 text-center mb-0" 
+               placeholder="Hãy nhập tên của bạn...">
     </div>
+
+    <button type="button" 
+            id="btnSearchSeat" 
+            onclick="findSeat(event)" 
+            class="btn-outline-analog w-100">
+        <i class="bi bi-search me-1"></i> TRA CỨU BÀN TIỆC
+    </button>
+
+    <!-- Kết quả hiển thị chuẩn -->
+    <div id="seatResultArea" class="mt-3 fw-bold font-mono" style="color: var(--analog-accent, #8b5cf6); font-size: 0.95rem;"></div>
+</div>
+@endif
 
     <div class="section-block">
         <div class="font-mono text-uppercase text-muted mb-2">GIFT BOX</div>

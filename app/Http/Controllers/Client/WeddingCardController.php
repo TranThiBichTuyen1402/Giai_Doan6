@@ -236,15 +236,23 @@ class WeddingCardController extends Controller
                 $card->bride_avatar = $request->file('bride_avatar')->store('wedding_avatars', 'public');
             }
 
-            if ($card->is_vip) {
+           // Xác định gói dịch vụ hiện tại
+            $package = $card->package_type ?? ($card->is_vip ? 'vip_pro' : 'free');
+
+            // Cả gói STANDARD (99k) và VIP PRO (199k) đều được lưu nhạc nền
+            if (in_array($package, ['standard', 'vip_pro'])) {
+                if ($request->hasFile('bg_music')) {
+                    $card->bg_music = $request->file('bg_music')->store('wedding_audio', 'public');
+                }
+            }
+
+            // Chỉ duy nhất gói VIP PRO (199k) mới lưu Voice Lời Mời & Lời Cảm Ơn
+            if ($package === 'vip_pro') {
                 if ($request->hasFile('voice_invite')) {
                     $card->voice_invite = $request->file('voice_invite')->store('wedding_audio', 'public');
                 }
                 if ($request->hasFile('voice_thanks')) {
                     $card->voice_thanks = $request->file('voice_thanks')->store('wedding_audio', 'public');
-                }
-                if ($request->hasFile('bg_music')) {
-                    $card->bg_music = $request->file('bg_music')->store('wedding_audio', 'public');
                 }
             }
 
@@ -259,7 +267,11 @@ class WeddingCardController extends Controller
                 }
                 $card->album_imgs = $albumPaths;
             }
-
+// ⚡ THÊM ĐOẠN NÀY: Kiểm tra nếu request có gửi cờ nâng VIP hoặc package VIP
+            if ($request->has('is_vip') || $request->input('package_type') === 'vip_pro' || $request->input('package_type') === 'standard') {
+                $card->is_vip = true;
+                $card->vip_expires_at = now()->addYears(2);
+            }
             $card->save();
 
             if (!Auth::check()) {
@@ -387,31 +399,33 @@ class WeddingCardController extends Controller
     }
 
     public function handlePaymentWebhook(Request $request)
-    {
-        $content = $request->input('content') ?? $request->input('description') ?? '';
+{
+    $content = $request->input('content') ?? $request->input('description') ?? '';
 
-        if (preg_match('/VIP\s*(\d+)/i', $content, $matches)) {
-            $cardId = $matches[1];
-            $card = WeddingCard::find($cardId);
+    // Cú pháp: STD <ID> (Gói 99k) hoặc VIP <ID> (Gói 199k)
+    if (preg_match('/(STD|VIP)\s*(\d+)/i', $content, $matches)) {
+        $type = strtoupper($matches[1]);
+        $cardId = $matches[2];
+        $card = WeddingCard::find($cardId);
 
-            if ($card) {
-                $card->is_vip = true;
-                $card->vip_expires_at = now()->addYears(2);
-                $card->save();
+        if ($card) {
+            $card->is_vip = true;
+            $card->package_type = ($type === 'STD') ? 'standard' : 'vip_pro';
+            $card->vip_expires_at = now()->addYears(2);
+            $card->save();
 
-                return response()->json([
-                    'success' => true,
-                    'message' => "Đã kích hoạt VIP thành công cho thiệp ID: {$cardId}"
-                ]);
-            }
+            return response()->json([
+                'success' => true,
+                'message' => "Kích hoạt gói {$card->package_type} thành công cho thiệp ID: {$cardId}"
+            ]);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Không tìm thấy ID thiệp hợp lệ trong nội dung chuyển khoản.'
-        ], 400);
     }
 
+    return response()->json([
+        'success' => false,
+        'message' => 'Nội dung chuyển khoản không hợp lệ.'
+    ], 400);
+}
     public function chooseTemplate()
     {
         $templates = \App\Models\Template::where('is_active', 1)->get();

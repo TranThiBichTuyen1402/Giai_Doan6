@@ -334,73 +334,93 @@
             </div>
         </div>
 
-        <div class="slide-page">
-            <div class="sweet-paper">
-                <h4 class="fw-bold mb-2" style="color: var(--dark-pink); font-family: 'Pattaya', sans-serif;">Khoảnh Khắc Ngọt Ngào</h4>
-                
-                @php
-                    $album = is_string($card->album_imgs ?? null) ? json_decode($card->album_imgs, true) : ($card->album_imgs ?? []);
-                @endphp
-                <div class="row g-2 mb-2">
-                    @if(!empty($album) && count($album) > 0)
-                        @foreach(array_slice($album, 0, 4) as $img)
-                            <div class="col-6"><img src="{{ asset($img) }}" class="img-fluid rounded-3" style="height:70px; object-fit:cover; width:100%;"></div>
-                        @endforeach
-                    @else
-                        <div class="col-6"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300" class="img-fluid rounded-3" style="height:70px; object-fit:cover; width:100%;"></div>
-                        <div class="col-6"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300" class="img-fluid rounded-3" style="height:70px; object-fit:cover; width:100%;"></div>
-                    @endif
-                </div>
+      <div class="slide-page">
+    <div class="sweet-paper">
+        <h4 class="fw-bold mb-2" style="color: var(--dark-pink); font-family: 'Pattaya', sans-serif;">Khoảnh Khắc Ngọt Ngào</h4>
+        
+        @php
+            $album = is_string($card->album_imgs ?? null) ? json_decode($card->album_imgs, true) : ($card->album_imgs ?? []);
+        @endphp
+        <div class="row g-2 mb-2">
+            @if(!empty($album) && count($album) > 0)
+                @foreach(array_slice($album, 0, 4) as $img)
+                    <div class="col-6"><img src="{{ asset($img) }}" class="img-fluid rounded-3" style="height:70px; object-fit:cover; width:100%;"></div>
+                @endforeach
+            @else
+                <div class="col-6"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300" class="img-fluid rounded-3" style="height:70px; object-fit:cover; width:100%;"></div>
+                <div class="col-6"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300" class="img-fluid rounded-3" style="height:70px; object-fit:cover; width:100%;"></div>
+            @endif
+        </div> {{-- Đóng row g-2 --}}
 
-                @if(!empty($card->wedding_video))
-                    <video controls class="w-100 rounded-3 mb-2" style="max-height: 100px;">
-                        <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
-                    </video>
-                @endif
+        @if(!empty($card->wedding_video))
+            <video controls class="w-100 rounded-3 mb-2" style="max-height: 100px;">
+                <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
+            </video>
+        @endif
 
-                <div class="mt-2 bg-white p-2 rounded-3 shadow-sm">
-                    <small class="d-block text-muted mb-1 fw-bold">Tải ảnh kỷ niệm cùng dâu rể</small>
-                    <div class="d-flex gap-1">
-                        <input type="file" id="momentImage" class="form-control form-control-sm rounded-pill" accept="image/*">
-                        <button class="btn btn-sm btn-danger rounded-pill px-3" onclick="uploadMoment()">Gửi</button>
-                    </div>
-                </div>
+        {{-- WEDDING MOMENTS --}}
+        <div class="white-card">
+            <div class="card-header-title">Wedding Moments</div>
+            <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+
+            {{-- Form gửi ảnh thật về Server --}}
+            <form action="{{ route('guest.upload_photo', $card->id ?? 5) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="file" name="photos[]" class="form-control" accept="image/*" multiple required>
+                <button type="submit" class="btn btn-danger mt-3">Tải ảnh</button>
+            </form>
+        </div>
+    </div> {{-- Đóng sweet-paper --}}
+</div> {{-- Đóng slide-page --}}
+
+{{-- SLIDE: TRA CỨU BÀN TIỆC ANALOG STYLE --}}
+@php
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
+
+@if($isVipCard || $isEditorMode)
+<div class="slide-page">
+    <div class="sweet-paper">
+
+        @if(!$isVipCard && $isEditorMode)
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(0, 0, 0, 0.1) !important;">
+                <span class="badge fw-bold px-2 py-1 font-mono" style="background: var(--analog-accent, var(--dark-pink, #e11d48)); color: #fff; font-size: 0.72rem;">
+                    👑 TÍNH NĂNG VIP
+                </span>
+                <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                    *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+                </small>
             </div>
+        @endif
+
+        <div class="font-mono text-uppercase text-muted mb-2">SEATING CHART</div>
+        <h4 class="fw-bold mb-3 font-mono text-uppercase" style="color: var(--analog-accent, var(--dark-pink)); font-size: 1.4rem;">
+            <i class="bi bi-search me-1"></i> Tra Cứu Bàn Tiệc
+        </h4>
+        
+        <p class="small text-muted mb-3">Nhập tên của bạn để tìm nhanh vị trí chỗ ngồi trong tiệc cưới nhé!</p>
+
+        <!-- Form tìm kiếm Analog -->
+        <div class="mb-3">
+             <input id="guestNameInput"
+                   type="text" 
+                   class="form-control-3 w-100 text-center mb-0" 
+                   placeholder="Hãy nhập tên của bạn...">
         </div>
 
-        {{-- SLIDE 6: TRA CỨU BÀN TIỆC ANALOG STYLE --}}
-        <div class="slide-page">
-            <div class="sweet-paper">
-                <div class="font-mono text-uppercase text-muted mb-2">SEATING CHART</div>
-                <h4 class="fw-bold mb-3 font-mono text-uppercase" style="color: var(--analog-accent, var(--dark-pink)); font-size: 1.4rem;">
-                    <i class="bi bi-search me-1"></i> Tra Cứu Bàn Tiệc
-                </h4>
-                
-                <p class="small text-muted mb-3">Nhập tên của bạn để tìm nhanh vị trí chỗ ngồi trong tiệc cưới nhé!</p>
+        <button type="button" 
+                id="btnSearchSeat" 
+                onclick="findSeat(event)" 
+                class="btn-outline-analog w-100 fw-bold">
+            <i class="bi bi-search me-1"></i> TÌM BÀN TIỆC
+        </button>
 
-                <!-- Form tìm kiếm Analog -->
-                <div class="mb-3">
-                    <input id="seatName" 
-                           type="text" 
-                           class="form-control-3 w-100 text-center mb-0" 
-                           data-card-id="{{ $card->id ?? '' }}" 
-                           data-search-url="{{ route('rsvp.searchTable') }}" 
-                           placeholder="Hãy nhập tên của bạn...">
-                </div>
-
-                <button type="button" 
-                        id="btnDoSearch" 
-                        onclick="findSeat()" 
-                        class="btn-outline-analog w-100 fw-bold">
-                    <i class="bi bi-search me-1"></i> TÌM BÀN TIỆC
-                </button>
-
-                <!-- Thẻ hiển thị kết quả -->
-                <div id="seatResult" class="mt-3 fw-bold font-mono" style="color: var(--analog-accent, var(--dark-pink)); font-size: 0.95rem;"></div>
-                <div id="guestSearchResultArea" class="mt-2 fw-bold font-mono" style="color: var(--analog-accent, var(--dark-pink)); font-size: 0.95rem;"></div>
-            </div>
-        </div>
-
+        <!-- Thẻ hiển thị kết quả chuẩn -->
+        <div id="seatResultArea" class="mt-3 fw-bold font-mono" style="color: var(--analog-accent, var(--dark-pink)); font-size: 0.95rem;"></div>
+    </div> {{-- Đóng sweet-paper --}}
+</div> {{-- Đóng slide-page --}}
+@endif
         <div class="slide-page">
             <div class="sweet-paper">
                 <h4 class="fw-bold mb-3 d-flex align-items-center justify-content-center gap-2" style="color: var(--dark-pink); font-family: 'Pattaya', sans-serif;">
@@ -531,8 +551,8 @@
 @push('scripts')
 <script>
     let currentSlide = 0;
-    const totalSlides = 8;
-
+const slides = document.querySelectorAll('.slide-page');
+const totalSlides = slides.length;
     function updateSlide() {
         const container = document.getElementById('slides-container');
         const nextBtn = document.getElementById('nextBtn');

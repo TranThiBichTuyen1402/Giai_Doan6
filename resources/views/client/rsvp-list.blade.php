@@ -292,9 +292,11 @@
                         <div class="row g-3">
                             @forelse($tables as $table)
                             @php
-                                $totalSeated = $table->rsvps->sum('guest_count') + $table->rsvps->count();
-                                $isOverloaded = $totalSeated > $table->capacity;
-                            @endphp
+    $totalSeated = $table->rsvps->sum(function($g) {
+        return $g->guest_count > 0 ? $g->guest_count : 1;
+    });
+    $isOverloaded = $totalSeated > $table->capacity;
+@endphp
                             <div class="col-md-6">
                                 <div class="card border-0 bg-light rounded-4 p-3 shadow-sm h-100">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -310,8 +312,8 @@
                                             <div>
                                                 <div class="fw-bold small text-dark">{{ $guest->guest_name }}</div>
                                                 <div class="text-muted extra-small" style="font-size: 11px;">
-                                                    +{{ $guest->guest_count }} người đi cùng
-                                                </div>
+                                                {{ $guest->guest_count ?? 1 }} người tham dự
+                                            </div>
                                             </div>
                                             <form action="{{ route('wedding_rsvps.assignTable', $guest->id) }}" method="POST">
                                                 @csrf
@@ -345,7 +347,7 @@
                                     <div>
                                         <div class="fw-bold small text-dark">{{ $uGuest->guest_name }}</div>
                                         <div class="text-muted extra-small" style="font-size: 11px;">
-                                            {{ $uGuest->side == 'groom' ? 'Nhà trai' : 'Nhà gái' }} • +{{ $uGuest->guest_count }} người
+                                            {{ $uGuest->side == 'groom' ? 'Nhà trai' : 'Nhà gái' }} • {{ $uGuest->guest_count ?? 1 }} người tham dự
                                         </div>
                                     </div>
                                     <form action="{{ route('wedding_rsvps.assignTable', $uGuest->id) }}" method="POST" class="d-flex align-items-center gap-1">
@@ -432,8 +434,7 @@
             </div>
         </div>
 
-        {{-- TAB 4: QUẢN LÝ KHO ẢNH CƯỚI --}}
-      {{-- TAB 4: QUẢN LÝ KHO ẢNH CƯỚI --}}
+     {{-- TAB 4: QUẢN LÝ KHO ẢNH CƯỚI --}}
 <div class="tab-pane fade" id="moments-panel">
     {{-- Form Đăng Ảnh --}}
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
@@ -462,8 +463,8 @@
             @forelse($moments as $moment)
             <div class="col-6 col-md-3">
                 <div class="border rounded-3 overflow-hidden shadow-sm position-relative">
-                    {{-- SỬA $moment->photo_url THÀNH $moment->image --}}
-<img src="{{ asset($moment->photo_url) }}" class="w-100" style="height: 180px; object-fit: cover;" loading="lazy">                    <div class="p-2 bg-light d-flex justify-content-between align-items-center">
+                    <img src="{{ asset($moment->photo_url) }}" class="w-100" style="height: 180px; object-fit: cover;" loading="lazy">
+                    <div class="p-2 bg-light d-flex justify-content-between align-items-center">
                         <small class="text-truncate text-muted" style="max-width: 120px;">
                             👤 {{ $moment->uploaded_by ?? 'Khách' }}
                         </small>
@@ -746,6 +747,37 @@
         </div>
     </div>
 </div>
+{{-- MODAL TẠO BÀN TIỆC MỚI --}}
+@if($selectedCard)
+<div class="modal fade" id="addTableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">🪑 Tạo Bàn Tiệc Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('wedding_tables.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="wedding_card_id" value="{{ $selectedCard->id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tên bàn tiệc *</label>
+                        <input type="text" name="name" class="form-control rounded-3" placeholder="VD: Bàn Họ Hàng 1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Số ghế tối đa</label>
+                        <input type="number" name="capacity" class="form-control rounded-3" value="10" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill fw-bold px-4">Tạo Bàn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 <script>
 function filterTable() {
     const search = document.getElementById('searchInput').value.toLowerCase();

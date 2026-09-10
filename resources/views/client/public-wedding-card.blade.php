@@ -150,59 +150,100 @@
     }
     @endif
    
-document.getElementById('btnSearchSeat').addEventListener('click', function() {
-    let name = document.getElementById('guestNameInput').value;
-    let cardId = "{{ $card->id }}";
-    let resultDiv = document.getElementById('searchSeatResult');
+document.getElementById('btnSearchSeat')?.addEventListener('click', function(e) {
+    if (e) e.preventDefault();
 
-    if (!name.trim()) {
-        resultDiv.innerHTML = '<div class="alert alert-warning">Vui lòng nhập tên của bạn!</div>';
+    // 1. Lấy ô input và thẻ hiển thị kết quả
+    let inputEl = document.getElementById('seatNameInput') || document.getElementById('guestNameInput') || this.closest('.input-group')?.querySelector('input');
+    let resultDiv = document.getElementById('seatResultArea');
+
+    if (!inputEl) return;
+
+    let name = inputEl.value.trim();
+    let cardId = "7"; // Hoặc truyền "{{ $card->id ?? '' }}"
+
+    if (!name) {
+        if (resultDiv) resultDiv.innerHTML = '<div class="alert alert-warning py-2 mt-2 text-dark small">Vui lòng nhập tên!</div>';
         return;
     }
 
-    resultDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+    // 2. Hiện trạng thái đang tìm
+    if (resultDiv) {
+        resultDiv.innerHTML = '<div class="text-warning small my-2"><span class="spinner-border spinner-border-sm me-1"></span> Đang tra cứu...</div>';
+    }
 
-    fetch(`/api/search-table?card_id=${cardId}&keyword=${encodeURIComponent(name)}`)
-        .then(response => response.json())
+    // 3. Gọi API lấy dữ liệu bàn tiệc
+    fetch(`/search-table?card_id=${cardId}&keyword=${encodeURIComponent(name)}`)
+        .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                let html = '<div class="alert alert-success"><strong>Tìm thấy thông tin:</strong><ul class="mb-0 mt-2 pl-3">';
+            if (!resultDiv) return;
+
+            if (data.success && data.guests && data.guests.length > 0) {
+                let html = '';
                 data.guests.forEach(guest => {
-                    html += `<li><strong>${guest.guest_name}</strong>: ${guest.table_name}`;
-                    if (guest.plus_ones > 0) html += ` (Đi kèm: ${guest.plus_ones} người)`;
-                    if (guest.note) html += `<br><small class="text-muted">Ghi chú: ${guest.note}</small>`;
-                    html += `</li>`;
+                    html += `
+                        <div class="p-3 rounded my-2 text-center" style="background: rgba(255, 255, 255, 0.15); border: 1px solid #f59e0b;">
+                            <div class="fw-bold fs-4 text-warning">${guest.table_name}</div>
+                            <div class="text-white small">Khách mời: <strong>${guest.guest_name}</strong></div>
+                            ${guest.plus_ones > 0 ? `<div class="text-info small">+${guest.plus_ones} người đi cùng</div>` : ''}
+                        </div>
+                    `;
                 });
-                html += '</ul></div>';
                 resultDiv.innerHTML = html;
             } else {
-                resultDiv.innerHTML = `<div class="alert alert-info">${data.message}</div>`;
+                resultDiv.innerHTML = `<div class="alert alert-info py-2 my-2 text-dark small">${data.message || 'Không tìm thấy thông tin bàn tiệc!'}</div>`;
             }
         })
-        .catch(error => {
-            resultDiv.innerHTML = '<div class="alert alert-danger">Đã có lỗi xảy ra, vui lòng thử lại sau!</div>';
+        .catch(err => {
+            console.error('Lỗi tra cứu:', err);
+            if (resultDiv) {
+                resultDiv.innerHTML = '<div class="alert alert-danger py-2 my-2 text-dark small">Lỗi kết nối máy chủ!</div>';
+            }
         });
 });
 function findSeat(e) {
-    if(e) e.preventDefault();
+    if (e) e.preventDefault();
+
+    // Lấy ô input: Ưu tiên tìm theo ID, nếu null thì tìm ô input nằm chung block với nút Tra cứu
+    let btn = e ? e.currentTarget || e.target : null;
+    let nameInput = document.getElementById('seatNameInput');
     
-    let nameInput = document.getElementById('seatNameInput').value;
-    let cardId = "{{ $card->id ?? '' }}";
+    if (!nameInput && btn) {
+        nameInput = btn.closest('.input-group')?.querySelector('input');
+    }
+
     let resultDiv = document.getElementById('seatResultArea');
 
-    if (!nameInput.trim()) {
-        resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0 text-dark small">Vui lòng nhập tên của bạn!</div>';
+    // Kiểm tra an toàn để tránh sập JS
+    if (!nameInput) {
+        console.error("Không tìm thấy thẻ input tra cứu!");
         return;
     }
 
-    resultDiv.innerHTML = '<div class="text-warning small my-2"><span class="spinner-border spinner-border-sm me-1"></span> Đang tra cứu...</div>';
+    let inputValue = nameInput.value.trim();
 
-    fetch(`/search-table?card_id=${cardId}&keyword=${encodeURIComponent(nameInput)}`)
+    if (!inputValue) {
+        if (resultDiv) {
+            resultDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0 text-dark small">Vui lòng nhập tên của bạn!</div>';
+        }
+        return;
+    }
+
+    if (resultDiv) {
+        resultDiv.innerHTML = '<div class="text-warning small my-2"><span class="spinner-border spinner-border-sm me-1"></span> Đang tra cứu...</div>';
+    }
+
+    // Lấy card_id từ biến global hoặc từ window
+    let cardId = window.cardId || "{{ $card->id ?? '' }}";
+
+    fetch(`/search-table?card_id=${cardId}&keyword=${encodeURIComponent(inputValue)}`)
         .then(res => {
             if (!res.ok) throw new Error('HTTP status ' + res.status);
             return res.json();
         })
         .then(data => {
+            if (!resultDiv) return;
+
             if (data.success) {
                 let html = '';
                 data.guests.forEach(guest => {
@@ -222,11 +263,11 @@ function findSeat(e) {
         })
         .catch(err => {
             console.error('Lỗi API:', err);
-            resultDiv.innerHTML = '<div class="alert alert-danger py-2 my-2 text-dark small">Lỗi kết nối tra cứu! (Kiểm tra Console F12)</div>';
+            if (resultDiv) {
+                resultDiv.innerHTML = '<div class="alert alert-danger py-2 my-2 text-dark small">Lỗi kết nối tra cứu! (Kiểm tra Console F12)</div>';
+            }
         });
 }
-// Biến lưu link map hiện tại
-window.currentMapUrl = "{{ !empty($card->map_link) ? $card->map_link : '' }}";
 
 // Hàm bắt sự kiện click mở Google Maps chuẩn 100%
 function openGoogleMapDirect() {

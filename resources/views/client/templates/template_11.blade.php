@@ -363,30 +363,52 @@
         </div>
     </div>
 
-        {{-- 6. TRA CỨU BÀN TIỆC (Khối vừa thêm) --}}
-    <div class="paper-card scroll-reveal scroll-fade-up">
-        <h6 class="font-syne text-dark fw-bold mb-1" style="letter-spacing: 1px;">
-            <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
-        </h6>
-        <p class="small text-sub mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+    {{-- 6. TRA CỨU BÀN TIỆC --}}
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
 
-        <div class="search-box-wrap shadow-sm">
-            <input id="guestSearchInput" 
-                   type="text" 
-                   class="form-control" 
-                   data-card-id="{{ $card->id ?? '' }}" 
-                   data-search-url="{{ route('rsvp.searchTable') }}" 
-                   placeholder="Hãy nhập tên của bạn...">
-                   
-            <button type="button" 
-                    id="btnDoSearch" 
-                    class="btn btn-rose-gold text-nowrap">
-                Tra Cứu
-            </button>
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
+<div class="paper-card scroll-reveal scroll-fade-up position-relative">
+
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(183, 110, 121, 0.2) !important;">
+            <span class="badge fw-bold px-2 py-1" style="background: var(--rose-gold, #b76e79); color: #fff; font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
         </div>
+    @endif
 
-        <div id="guestSearchResultArea" class="mt-3"></div>
+    <h6 class="font-syne text-dark fw-bold mb-1" style="letter-spacing: 1px;">
+        <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
+    </h6>
+    <p class="small text-sub mb-3">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
+
+    <div class="search-box-wrap shadow-sm">
+         <input id="guestNameInput"
+               type="text" 
+               class="form-control" 
+               placeholder="Hãy nhập tên của bạn...">
+               
+        <button type="button" 
+                id="btnSearchSeat" 
+                onclick="findSeat(event)" 
+                class="btn btn-rose-gold text-nowrap">
+            Tra Cứu
+        </button>
     </div>
+
+    <!-- Khung kết quả tra cứu chuẩn -->
+    <div id="seatResultArea" class="mt-3"></div>
+</div>
+@endif
 
     {{-- 5. ALBUM KỶ NIỆM (Hiệu ứng Zoom-In) --}}
     <div class="paper-card scroll-reveal scroll-zoom-in">
@@ -398,6 +420,27 @@
             <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500" alt="Gallery 4" onclick="window.open(this.src)">
         </div>
     </div>
+ @if(!empty($card->wedding_video))
+    <div class="white-card">
+        <div class="card-header-title">VIDEO CƯỚI</div>
+        <video controls class="w-100 rounded">
+            <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
+        </video>
+    </div>
+    @endif
+
+   {{-- WEDDING MOMENTS --}}
+<div class="white-card">
+    <div class="card-header-title">Wedding Moments</div>
+    <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+
+    {{-- Form gửi ảnh thật về Server --}}
+            <form action="{{ route('guest.upload_photo', $card->id ?? 11) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="photos[]" class="form-control" accept="image/*" multiple required>
+        <button type="submit" class="btn btn-danger mt-3">Tải ảnh</button>
+    </form>
+</div>
 
     {{-- 6. SỔ LƯU BÚT (Hiệu ứng Fade Up) --}}
     <div class="paper-card scroll-reveal scroll-fade-up">

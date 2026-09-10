@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\WeddingRsvp;
-use Illuminate\Support\Facades\Schema;
+use App\Models\WeddingRsvp; // Hoặc Model lưu danh sách khách của bạn
 
 class TableController extends Controller
 {
@@ -13,100 +12,62 @@ class TableController extends Controller
     {
         try {
             $cardId = $request->query('card_id');
-            $name = trim($request->query('name'));
+            $keyword = trim($request->query('keyword'));
 
-            if (!$name) {
+            if (empty($keyword)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vui lòng nhập tên của bạn!'
                 ]);
             }
 
-            $model = new WeddingRsvp();
-            $tableName = $model->getTable(); // Lấy tên bảng trong DB
+            // Bắt đầu query dữ liệu khách mời kèm thông tin bàn
+            $query = WeddingRsvp::with('table');
 
-            // 1. Kiểm tra danh sách các cột thực sự có trong bảng database
-            $possibleColumns = ['guest_name', 'name', 'full_name', 'fullname', 'khach_moi', 'ten_khach'];
-            $existingColumns = [];
-
-            foreach ($possibleColumns as $col) {
-                if (Schema::hasColumn($tableName, $col)) {
-                    $existingColumns[] = $col;
-                }
-            }
-
-            // Nếu không tìm thấy cột tên nào phù hợp
-            if (empty($existingColumns)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy cột lưu tên khách trong bảng ' . $tableName
-                ], 500);
-            }
-
-            // 2. Tạo truy vấn chỉ trên các cột ĐÃ TỒN TẠI
-            $query = WeddingRsvp::query();
-
-            if ($cardId && Schema::hasColumn($tableName, 'wedding_card_id')) {
+            // Nếu có card_id thì bắt buộc lọc theo đúng thiệp
+            if (!empty($cardId)) {
                 $query->where('wedding_card_id', $cardId);
             }
 
-            $query->where(function ($q) use ($existingColumns, $name) {
-                foreach ($existingColumns as $index => $col) {
-                    if ($index === 0) {
-                        $q->where($col, 'LIKE', '%' . $name . '%');
-                    } else {
-                        $q->orWhere($col, 'LIKE', '%' . $name . '%');
-                    }
-                }
-            });
+            // Tìm kiếm theo tên (Guest Name)
+            $rsvps = $query->where('guest_name', 'LIKE', '%' . $keyword . '%')->get();
 
-            $guests = $query->get();
-
-            if ($guests->isEmpty()) {
+            if ($rsvps->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Không tìm thấy thông tin bàn tiệc cho tên này.'
+                    'message' => 'Không tìm thấy thông tin bàn tiệc cho tên "' . htmlspecialchars($keyword) . '"'
                 ]);
             }
 
-        // 3. Trả về kết quả
-            $data = $guests->map(function ($item) use ($existingColumns) {
-                // Tự lấy tên từ cột hợp lệ đầu tiên có dữ liệu
-                $guestName = 'Khách mời';
-                foreach ($existingColumns as $col) {
-                    if (!empty($item->$col)) {
-                        $guestName = $item->$col;
-                        break;
-                    }
+            // Build dữ liệu trả về theo đúng các key mà JS của bạn đang đọc
+            $guests = $rsvps->map(function ($rsvp) {
+                // Lấy tên bàn từ relation hoặc cột trực tiếp
+                $tableName = 'Chưa xếp bàn';
+                if ($rsvp->table && !empty($rsvp->table->name)) {
+                    $tableName = $rsvp->table->name;
+                } elseif (!empty($rsvp->table_name)) {
+                    $tableName = $rsvp->table_name;
                 }
 
-                // Xử lý lấy tên bàn (Tránh lỗi [object Object])
-                $tableName = 'Chưa xếp bàn';
-                if (is_object($item->table_name)) {
-                    $tableName = $item->table_name->name ?? $item->table_name->table_name ?? 'Chưa xếp bàn';
-                } elseif (is_string($item->table_name) || is_numeric($item->table_name)) {
-                    $tableName = $item->table_name;
-                } elseif (isset($item->table)) {
-                    $tableName = is_object($item->table) ? ($item->table->name ?? $item->table->table_name) : $item->table;
-                }
+                $guestCount = (int) ($rsvp->guest_count ?? $rsvp->guests ?? 1);
 
                 return [
-                    'table_name'  => $tableName,
-                    'guest_name'  => $guestName,
-                    'guest_count' => $item->guests_count ?? $item->amount ?? $item->number_of_guests ?? 1,
-                    'note'        => $item->note ?? '',
+                    'guest_name' => $rsvp->guest_name ?? $rsvp->name,
+                    'table_name' => $tableName,
+                    'plus_ones'  => max(0, $guestCount - 1),
+                    'note'       => $rsvp->note ?? $rsvp->message ?? ''
                 ];
             });
 
             return response()->json([
                 'success' => true,
-                'guests'  => $data
+                'guests'  => $guests
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi Server: ' . $e->getMessage()
+                'message' => 'Lỗi máy chủ: ' . $e->getMessage()
             ], 500);
         }
     }

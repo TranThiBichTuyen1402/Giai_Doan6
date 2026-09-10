@@ -64,7 +64,9 @@ return new class extends Migration
             $table->string('bride_qr_code')->nullable();
             
             // Trạng thái thanh toán
-            $table->boolean('is_paid')->default(false);
+           $table->boolean('is_paid')->default(false);
+            $table->boolean('is_vip')->default(false);
+            $table->string('package_type')->default('free');
             $table->timestamps();
         });
     }
@@ -74,3 +76,6 @@ return new class extends Migration
         Schema::dropIfExists('wedding_cards');
     }
 };
+Schema::table('wedding_cards', function (Blueprint $table) {
+    $table->string('package_type')->default('free')->after('is_vip'); // free, standard, vip_pro
+});

@@ -341,74 +341,116 @@
     </div>
     @endif
 
-    {{-- WEDDING MOMENTS --}}
-    <div class="white-card">
-        <div class="card-header-title">Wedding Moments</div>
-        <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
-        <input type="file" id="momentImage" class="form-control" accept="image/*">
-        <button type="button" class="btn btn-danger mt-3" onclick="uploadMoment()">Tải ảnh</button>
-    </div>
+   {{-- WEDDING MOMENTS --}}
+<div class="white-card">
+    <div class="card-header-title">Wedding Moments</div>
+    <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+
+    {{-- Form gửi ảnh thật về Server --}}
+<form action="{{ route('guest.upload_photo', $card->id ?? 1) }}" method="POST" enctype="multipart/form-data">       
+     @csrf
+        <input type="file" name="photos[]" class="form-control" accept="image/*" multiple required>
+        <button type="submit" class="btn btn-danger mt-3">Tải ảnh</button>
+    </form>
+</div>
 
   {{-- TRA CỨU BÀN TIỆC --}}
-<div class="search-seat-card mx-auto my-3 p-3 rounded-4" style="max-width: 440px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+@php
+    // Kiểm tra xem đang ở giao diện Editor hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+   $isVipCard = !empty($card->is_vip) || (isset($user) && $user->is_vip) || request()->boolean('vip') || $isEditorMode;
+@endphp
+
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
+<div class="search-seat-card mx-auto my-3 p-3 rounded-4 position-relative" style="max-width: 440px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+    
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary border-opacity-50">
+            <span class="badge bg-warning text-dark fw-bold px-2 py-1" style="font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="text-warning fst-italic" style="font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
+        </div>
+    @endif
+
     <h3 class="text-white text-uppercase fs-6 fw-bold mb-1" style="font-size: 0.95rem !important;">
         <i class="bi bi-search text-warning me-1"></i> TRA CỨU BÀN TIỆC
     </h3>
     <p class="small text-white-50 mb-3" style="font-size: 0.85rem;">Nhập tên của bạn để xem vị trí chỗ ngồi nhé!</p>
 
     <!-- Thanh tìm kiếm size vừa vặn -->
-    <div class="input-group search-input-group shadow-sm">
-        <input id="guestSearchInput" 
-               type="text" 
-               class="form-control bg-dark text-white border-0 px-3" 
-               style="font-size: 0.9rem; height: 40px;"
-               data-card-id="{{ $card->id ?? '' }}" 
-               data-search-url="{{ route('rsvp.searchTable') }}" 
-               placeholder="Hãy nhập tên của bạn...">
-               
-        <button type="button" id="btnDoSearch" class="btn btn-warning fw-bold text-dark px-3 text-nowrap" style="font-size: 0.9rem; height: 40px; display: flex; align-items: center;">
-            Tra Cứu
-        </button>
-    </div>
-
-    <div id="guestSearchResultArea" class="mt-3"></div>
+    <!-- Thanh tìm kiếm size vừa vặn -->
+<div class="input-group search-input-group shadow-sm">
+    <input id="guestNameInput"
+           class="form-control bg-dark text-white border-0 px-3 search-seat-kw" 
+           style="font-size: 0.9rem; height: 40px;"
+           placeholder="Hãy nhập tên của bạn...">
+           
+    <button type="button" 
+        id="btnSearchSeat" 
+        class="btn btn-warning fw-bold text-dark px-3 text-nowrap" 
+        style="font-size: 0.9rem; height: 40px; display: flex; align-items: center;">
+    Tra Cứu
+</button>
 </div>
-
-    {{-- HỘP MỪNG CƯỚI --}}
+<div id="seatResultArea" class="mt-3"></div>
+</div>
+@endif
+   {{-- HỘP MỪNG CƯỚI (DEMO QR TỰ ĐỘNG) --}}
     <div class="white-card">
         <div class="card-header-title"><i class="bi bi-qr-code-scan me-1"></i> HỘP MỪNG CƯỚI</div>
         <div class="bank-grid-2">
+            <!-- Chú Rể -->
             <div class="border-end border-secondary pe-2">
                 <div class="text-primary fw-bold">Mừng Cưới Chú Rể</div>
                 <div class="text-muted small" style="font-size:0.7rem;" data-field="groom_bank_name">{{ $card->groom_bank_name ?? 'MBBank' }}</div>
                 <div class="bank-acc-num" data-field="groom_bank_acc">{{ $card->groom_bank_acc ?? '0987654321' }}</div>
                 <div class="text-muted fw-semibold" style="font-size:0.72rem;" data-field="groom_bank_owner">{{ $card->groom_bank_owner ?? 'DINH HA' }}</div>
-                @if(!empty($card->groom_bank_qr))
-                    <img src="{{ asset($card->groom_bank_qr) }}" onclick="window.open(this.src)" class="img-fluid rounded mt-3" style="max-width:150px; cursor:pointer;">
-                @endif
+                
+                {{-- Ảnh QR VietQR Chú Rể --}}
+                <div class="position-relative d-inline-block mt-3 rounded overflow-hidden" style="max-width: 150px;">
+                    <img src="https://img.vietqr.io/image/{{ $card->groom_bank_name ?? 'MB' }}-{{ $card->groom_bank_acc ?? '0987654321' }}-compact.jpg" 
+                         onclick="{{ $isVipCard ? 'window.open(this.src)' : '' }}" 
+                         class="img-fluid rounded" 
+                         style="{{ !$isVipCard ? 'filter: blur(5px); opacity: 0.5;' : 'cursor:pointer;' }}">
+                    
+                    @if(!$isVipCard)
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-1 text-center" style="background: rgba(0,0,0,0.35);">
+                            <i class="bi bi-lock-fill text-warning fs-5"></i>
+                            <span class="badge bg-warning text-dark fw-bold mt-1" style="font-size: 0.55rem;">Mã QR VIP</span>
+                        </div>
+                    @endif
+                </div>
             </div>
+
+            <!-- Cô Dâu -->
             <div class="ps-2">
                 <div class="text-danger fw-bold">Mừng Cưới Cô Dâu</div>
                 <div class="text-muted small" style="font-size:0.7rem;" data-field="bride_bank_name">{{ $card->bride_bank_name ?? 'Vietcombank' }}</div>
                 <div class="bank-acc-num" style="color:#f43f5e;" data-field="bride_bank_acc">{{ $card->bride_bank_acc ?? '0123456789' }}</div>
                 <div class="text-muted fw-semibold" style="font-size:0.72rem;" data-field="bride_bank_owner">{{ $card->bride_bank_owner ?? 'NGOC BICH' }}</div>
-                @if(!empty($card->bride_bank_qr))
-                    <img src="{{ asset($card->bride_bank_qr) }}" onclick="window.open(this.src)" class="img-fluid rounded mt-3" style="max-width:150px; cursor:pointer;">
-                @endif
+                
+                {{-- Ảnh QR VietQR Cô Dâu --}}
+                <div class="position-relative d-inline-block mt-3 rounded overflow-hidden" style="max-width: 150px;">
+                    <img src="https://img.vietqr.io/image/{{ $card->bride_bank_name ?? 'VCB' }}-{{ $card->bride_bank_acc ?? '0123456789' }}-compact.jpg" 
+                         onclick="{{ $isVipCard ? 'window.open(this.src)' : '' }}" 
+                         class="img-fluid rounded" 
+                         style="{{ !$isVipCard ? 'filter: blur(5px); opacity: 0.5;' : 'cursor:pointer;' }}">
+                    
+                    @if(!$isVipCard)
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center p-1 text-center" style="background: rgba(0,0,0,0.35);">
+                            <i class="bi bi-lock-fill text-warning fs-5"></i>
+                            <span class="badge bg-warning text-dark fw-bold mt-1" style="font-size: 0.55rem;">Mã QR VIP</span>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
-
-    @if(!empty($card->voice_thanks))
-    <div class="white-card">
-        <div class="card-header-title"><i class="bi bi-mic-fill me-1"></i> LỜI CẢM ƠN</div>
-        <p class="small text-muted mb-3">Sau buổi tiệc, cô dâu chú rể gửi lời cảm ơn đến tất cả khách mời.</p>
-        <button class="btn btn-success rounded-pill px-4" onclick="playVoice('{{ asset($card->voice_thanks) }}')">
-            <i class="bi bi-volume-up-fill me-1"></i> Nghe lời cảm ơn
-        </button>
-    </div>
-    @endif
-
     {{-- LỜI CHÚC --}}
     <div class="white-card">
         <div class="card-header-title">LỜI CHÚC</div>
@@ -479,3 +521,4 @@
     </div>
 </div>
 @endsection
+

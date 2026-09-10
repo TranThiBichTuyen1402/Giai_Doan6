@@ -436,17 +436,42 @@
             </div>
         @endif
 
-        <div class="paper-frame">
-            <div class="card-header-title-2"><i class="bi bi-camera me-1"></i> WEDDING MOMENTS</div>
-            <p class="small text-muted mb-3">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
-            <input type="file" id="momentImage" class="form-control mb-3" accept="image/*">
-            <button type="button" class="btn text-white rounded-pill px-4 fw-semibold" style="background: var(--korean-pink);" onclick="uploadMoment()">
-                <i class="bi bi-cloud-upload me-1"></i> Tải ảnh
-            </button>
-        </div>
+       <div class="paper-frame">
+    <div class="card-header-title-2"><i class="bi bi-camera me-1"></i> WEDDING MOMENTS</div>
+    <p class="small text-muted mb-3">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+    
+    {{-- Form gửi dữ liệu thật về Backend --}}
+    <form action="{{ route('guest.upload_photo', $card->id ?? 2 ) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="photos[]" class="form-control mb-3" accept="image/*" multiple required>
+        <button type="submit" class="btn text-white rounded-pill px-4 fw-semibold" style="background: var(--korean-pink);">
+            <i class="bi bi-cloud-upload me-1"></i> Tải ảnh
+        </button>
+    </form>
+</div>
+{{-- TRA CỨU BÀN TIỆC --}}
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
 
-        {{-- TRA CỨU BÀN TIỆC --}}
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
 <div class="paper-frame">
+
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(232, 165, 152, 0.3) !important;">
+            <span class="badge fw-bold px-2 py-1" style="background: var(--korean-pink); color: #fff; font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
+        </div>
+    @endif
+
     <div class="card-header-title-2">
         <i class="bi bi-search me-1"></i> TRA CỨU BÀN TIỆC
     </div>
@@ -456,26 +481,23 @@
 
     <!-- Thanh tìm kiếm chuẩn Korean Style -->
     <div class="input-group shadow-sm rounded-pill overflow-hidden p-1" style="background: var(--korean-soft-pink); border: 1px solid rgba(232, 165, 152, 0.4);">
-        <input id="guestSearchInput" 
+        <input id="guestNameInput"
                type="text" 
                class="form-control border-0 bg-transparent text-center px-3" 
                style="font-size: 0.88rem; height: 40px; color: var(--korean-text);"
-               data-card-id="{{ $card->id ?? '' }}" 
-               data-search-url="{{ route('rsvp.searchTable') }}" 
                placeholder="Hãy nhập tên của bạn...">
                
         <button type="button" 
-                id="btnDoSearch" 
-                class="btn rounded-pill fw-semibold px-4 text-white" 
-                style="background: var(--korean-pink); font-size: 0.85rem; height: 40px; border: none;">
-            Tra Cứu
-        </button>
+        id="btnSearchSeat" 
+        class="btn btn-warning fw-bold text-dark px-3 text-nowrap" 
+        style="font-size: 0.9rem; height: 40px; display: flex; align-items: center;">
+    Tra Cứu
+</button>
     </div>
-
     <!-- Kết quả trả về -->
-    <div id="guestSearchResultArea" class="mt-3 fw-bold" style="color: var(--korean-pink); font-size: 0.95rem;"></div>
+    <div id="seatResultArea" class="mt-3 fw-bold" style="color: var(--korean-pink); font-size: 0.95rem;"></div>
 </div>
-
+@endif
         <div class="paper-frame">
     <div class="card-header-title-2"><i class="bi bi-qr-code-scan me-1"></i> HỘP MỪNG CƯỚI</div>
     <div class="row g-2 text-center">

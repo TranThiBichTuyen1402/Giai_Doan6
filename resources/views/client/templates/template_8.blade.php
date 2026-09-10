@@ -313,35 +313,54 @@
         </div>
     </div>
 
-    {{-- KHỐI TRA CỨU BÀN TIỆC --}}
-    <div class="section-block">
-        <h6 class="fw-bold text-uppercase text-warning-emphasis mb-2" style="letter-spacing: 2px;">— VỊ TRÍ CHỖ NGỒI —</h6>
-        <p class="small text-muted mb-3" data-field="search_table_desc">
-            {{ $card->search_table_desc ?? 'Nhập tên hoặc số điện thoại của bạn để tra cứu vị trí bàn tiệc nhé!' }}
-        </p>
+  {{-- KHỐI TRA CỨU BÀN TIỆC --}}
+@php
+    // Kiểm tra xem đang ở giao diện Editor (chỉnh sửa/dùng thử) hay trang xem thiệp thực tế
+    $isEditorMode = request()->boolean('editor');
+    $isVipCard = !empty($card->is_vip);
+@endphp
 
-        <div class="input-group shadow-sm">
-            <input id="guestSearchInput" 
-                   type="text" 
-                   class="form-control search-input-sunny rounded-start-pill px-3" 
-                   style="height: 46px;" 
-                   data-card-id="{{ $card->id ?? '' }}" 
-                   data-search-url="{{ route('rsvp.searchTable') }}" 
-                   placeholder="Nhập tên ví dụ: Tuấn...">
-                   
-            <button type="button" 
-                    id="btnDoSearch" 
-                    class="btn btn-sunny px-4 rounded-end-pill" 
-                    style="height: 46px;" 
-                    onclick="doSearchTable()">
-                <i class="bi bi-search me-1"></i> Tra Cứu
-            </button>
+{{-- Hiển thị nếu: Thiệp đã VIP HOẶC đang mở ở chế độ Editor --}}
+@if($isVipCard || $isEditorMode)
+<div class="section-block">
+
+    {{-- NẾU CHƯA VIP & ĐANG TRONG EDITOR: HIỆN BADGE VIP VÀ THÔNG BÁO NHẮC NHỞ --}}
+    @if(!$isVipCard && $isEditorMode)
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style="border-color: rgba(245, 158, 11, 0.3) !important;">
+            <span class="badge fw-bold px-2 py-1" style="background: var(--bs-warning, #f59e0b); color: #000; font-size: 0.72rem;">
+                👑 TÍNH NĂNG VIP
+            </span>
+            <small class="fst-italic" style="color: #d97706; font-size: 0.75rem;">
+                *Cần Nâng VIP & Tạo tài khoản để khách dùng được tính năng này
+            </small>
         </div>
+    @endif
 
-        <!-- Khung kết quả tra cứu AJAX -->
-        <div id="guestSearchResultArea" class="mt-3 d-none text-start"></div>
+    <h6 class="fw-bold text-uppercase text-warning-emphasis mb-2" style="letter-spacing: 2px;">— VỊ TRÍ CHỖ NGỒI —</h6>
+    <p class="small text-muted mb-3" data-field="search_table_desc">
+        {{ $card->search_table_desc ?? 'Nhập tên hoặc số điện thoại của bạn để tra cứu vị trí bàn tiệc nhé!' }}
+    </p>
+
+    <div class="input-group shadow-sm">
+         <input id="guestNameInput"
+               type="text" 
+               class="form-control search-input-sunny rounded-start-pill px-3" 
+               style="height: 46px;" 
+               placeholder="Nhập tên ví dụ: Tuấn...">
+               
+        <button type="button" 
+                id="btnSearchSeat" 
+                class="btn btn-sunny px-4 rounded-end-pill" 
+                style="height: 46px;" 
+                onclick="findSeat(event)">
+            <i class="bi bi-search me-1"></i> Tra Cứu
+        </button>
     </div>
 
+    <!-- Khung kết quả tra cứu chuẩn -->
+    <div id="seatResultArea" class="mt-3 text-start"></div>
+</div>
+@endif
     {{-- ALBUM --}}
     <div class="section-block">
         <h6 class="fw-bold text-uppercase text-warning-emphasis mb-3" style="letter-spacing: 2px;">— ALBUM KỶ NIỆM —</h6>
@@ -352,18 +371,42 @@
             <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500" alt="Gallery 4" onclick="previewImage(this.src)">
         </div>
     </div>
+ @if(!empty($card->wedding_video))
+    <div class="white-card">
+        <div class="card-header-title">VIDEO CƯỚI</div>
+        <video controls class="w-100 rounded">
+            <source src="{{ asset($card->wedding_video) }}" type="video/mp4">
+        </video>
+    </div>
+    @endif
 
-    {{-- GUESTBOOK --}}
+   {{-- WEDDING MOMENTS --}}
+<div class="white-card">
+    <div class="card-header-title">Wedding Moments</div>
+    <p class="small text-muted">Chia sẻ khoảnh khắc cùng cô dâu chú rể</p>
+
+    {{-- Form gửi ảnh thật về Server --}}
+            <form action="{{ route('guest.upload_photo', $card->id ?? 8) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="photos[]" class="form-control" accept="image/*" multiple required>
+        <button type="submit" class="btn btn-danger mt-3">Tải ảnh</button>
+    </form>
+</div>
+
+   {{-- SỔ LƯU BÚT --}}
     <div class="section-block">
         <h6 class="fw-bold text-uppercase text-warning-emphasis mb-3" style="letter-spacing: 2px;">— SỔ LƯU BÚT —</h6>
+        
+        {{-- Khung chứa danh sách lời chúc & ảnh sẽ hiện ở đây --}}
         <div id="wishesContainer">
-            <div class="wish-item">
+            <div class="wish-item mb-3">
                 <strong class="d-block text-dark small">Anh Tuấn & Chị Mai</strong>
                 <span class="text-muted small">"Chúc hai em trăm năm hạnh phúc, sớm có quý tử nha!"</span>
             </div>
         </div>
+
         <button class="btn btn-outline-warning w-100 rounded-pill py-2 small fw-bold mt-2" data-bs-toggle="modal" data-bs-target="#wishModal">
-            <i class="bi bi-pencil-square me-1"></i> GỬI LỜI CHÚC MỪNG
+            <i class="bi bi-pencil-square me-1"></i> GỬI LỜI CHÚC MỪNG & ẢNH
         </button>
     </div>
 
@@ -455,21 +498,193 @@
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-body p-4 text-start">
                 <h5 class="fw-bold text-center text-dark mb-3">Gửi Lời Chúc Mừng</h5>
-                <form id="wishForm">
+                
+                <form id="wishForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Tên của bạn</label>
                         <input type="text" id="wish_name" class="form-control rounded-pill px-3" required placeholder="Nhập tên của bạn">
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Lời chúc mừng</label>
                         <textarea id="wish_text" class="form-control rounded-3 px-3" rows="3" required placeholder="Nhập lời chúc tốt đẹp nhất..."></textarea>
                     </div>
+
+                    {{-- 1. ẢNH KỶ NIỆM --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-warning-emphasis">
+                            <i class="bi bi-camera-fill me-1"></i> Gửi ảnh kỷ niệm (không bắt buộc)
+                        </label>
+                        <input type="file" id="wish_image" accept="image/*" class="form-control rounded-3">
+                    </div>
+
+                    {{-- 2. KHỐI GHI ÂM TRỰC TIẾP TỪ TEMPLATE 8 --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-warning-emphasis">
+                            <i class="bi bi-mic-fill me-1"></i> Gửi kèm Giọng nói trực tiếp
+                        </label>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" id="btnRecord" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                                <i class="bi bi-record-circle me-1"></i> Bấm để ghi âm
+                            </button>
+                            <span id="recordTimer" class="small text-danger fw-bold d-none">00:00</span>
+                        </div>
+
+                        {{-- Khung nghe lại bản vừa ghi âm --}}
+                        <div id="audioPreviewWrapper" class="mt-2 d-none">
+                            <audio id="audioPreview" controls style="max-width: 100%; height: 36px;"></audio>
+                            <button type="button" id="btnDeleteRecord" class="btn btn-sm btn-link text-danger p-0 ms-2 text-decoration-none">
+                                <i class="bi bi-trash"></i> Ghi lại
+                            </button>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-sunny w-100 rounded-pill py-2 fw-bold">GỬI LỜI CHÚC</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedAudioBlob = null;
+    let timerInterval = null;
+    let seconds = 0;
 
+    const btnRecord = document.getElementById('btnRecord');
+    const recordTimer = document.getElementById('recordTimer');
+    const audioPreviewWrapper = document.getElementById('audioPreviewWrapper');
+    const audioPreview = document.getElementById('audioPreview');
+    const btnDeleteRecord = document.getElementById('btnDeleteRecord');
+
+    // 1. Xử lý Ghi Âm Trực Tiếp
+    btnRecord?.addEventListener('click', async function() {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    recordedAudioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    const audioUrl = URL.createObjectURL(recordedAudioBlob);
+                    if (audioPreview) audioPreview.src = audioUrl;
+                    
+                    audioPreviewWrapper?.classList.remove('d-none');
+                    btnRecord.innerHTML = '<i class="bi bi-record-circle me-1"></i> Bấm để ghi âm';
+                    btnRecord.classList.remove('btn-danger');
+                    btnRecord.classList.add('btn-outline-warning');
+                    recordTimer?.classList.add('d-none');
+                    clearInterval(timerInterval);
+                };
+
+                mediaRecorder.start();
+                
+                // Cập nhật giao diện khi bắt đầu ghi âm
+                btnRecord.innerHTML = '<i class="bi bi-stop-circle-fill me-1"></i> Dừng ghi âm';
+                btnRecord.classList.remove('btn-outline-warning');
+                btnRecord.classList.add('btn-danger');
+                recordTimer?.classList.remove('d-none');
+                
+                // Đồng hồ đếm thời gian
+                seconds = 0;
+                if (recordTimer) recordTimer.innerText = '00:00';
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    let m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                    let s = (seconds % 60).toString().padStart(2, '0');
+                    if (recordTimer) recordTimer.innerText = `${m}:${s}`;
+                }, 1000);
+
+            } catch (err) {
+                alert('Vui lòng cấp quyền truy cập Microphone để ghi âm!');
+            }
+        } else if (mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+    });
+
+    // 2. Xóa bản ghi âm vừa tạo
+    btnDeleteRecord?.addEventListener('click', function() {
+        recordedAudioBlob = null;
+        if (audioPreview) audioPreview.src = '';
+        audioPreviewWrapper?.classList.add('d-none');
+    });
+
+    // 3. Xử lý Submit Form Gửi Lời Chúc (Text + Ảnh + Âm thanh)
+    const wishForm = document.getElementById('wishForm');
+    wishForm?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const nameEl = document.getElementById('wish_name');
+        const textEl = document.getElementById('wish_text');
+        const imageEl = document.getElementById('wish_image');
+        
+        if (!textEl || !textEl.value.trim()) return;
+
+        const name = nameEl && nameEl.value.trim() ? nameEl.value : 'Ẩn danh';
+        const text = textEl.value;
+        const imgFile = imageEl && imageEl.files ? imageEl.files[0] : null;
+
+        // Hàm dựng HTML và hiển thị Lời chúc ra màn hình
+        const renderWish = (imgSrc = null, audioSrc = null) => {
+            const imgHTML = imgSrc 
+                ? `<div class="mt-2"><img src="${imgSrc}" class="img-fluid rounded-3 border border-warning shadow-sm" style="max-height: 200px; width: 100%; object-fit: cover; cursor: pointer;" onclick="window.open('${imgSrc}', '_blank')"></div>` 
+                : '';
+
+            const audioHTML = audioSrc 
+                ? `<div class="mt-2"><audio controls style="width: 100%; height: 36px;"><source src="${audioSrc}"></audio></div>` 
+                : '';
+
+            const wishHTML = `
+                <div class="wish-item mb-3">
+                    <strong class="d-block text-dark small">${name}</strong>
+                    <span class="text-muted small">"${text}"</span>
+                    ${imgHTML}
+                    ${audioHTML}
+                </div>
+            `;
+            
+            document.getElementById('wishesContainer')?.insertAdjacentHTML('beforeend', wishHTML);
+            alert('Cảm ơn lời chúc thân thương của bạn nhé! ❤️');
+            
+            // Reset dữ liệu sau khi gửi thành công
+            wishForm.reset();
+            recordedAudioBlob = null;
+            if (audioPreview) audioPreview.src = '';
+            audioPreviewWrapper?.classList.add('d-none');
+            
+            // Đóng Modal
+            const modalEl = document.getElementById('wishModal');
+            if (modalEl && window.bootstrap) {
+                bootstrap.Modal.getInstance(modalEl)?.hide();
+            }
+        };
+
+        // Tạo URL âm thanh từ bản ghi âm trực tiếp
+        let audioSrc = recordedAudioBlob ? URL.createObjectURL(recordedAudioBlob) : null;
+
+        // Đọc File Ảnh nếu có
+        if (imgFile) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                renderWish(event.target.result, audioSrc);
+            };
+            reader.readAsDataURL(imgFile);
+        } else {
+            renderWish(null, audioSrc);
+        }
+    });
+});
+</script>
+@endpush
