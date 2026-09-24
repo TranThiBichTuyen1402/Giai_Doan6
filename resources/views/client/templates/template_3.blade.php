@@ -236,12 +236,17 @@
             <div class="cd-item-3"><span id="cd-mins">00</span><small>Mins</small></div>
             <div class="cd-item-3"><span id="cd-secs">00</span><small>Secs</small></div>
         </div>
-
-        @if(!empty($card->voice_invite))
-            <button class="btn-outline-analog mt-2" onclick="playVoice('{{ asset($card->voice_invite) }}')">
-                <i class="bi bi-play-circle me-1"></i> NGHE LỜI MỜI
-            </button>
-        @endif
+<!--loi moi tu cap doi -->
+      @if(!empty($card->voice_invite))
+    <div class="mb-4 text-center">
+        <button type="button" 
+                class="btn rounded-pill px-4 py-2 btn-sm fw-bold shadow-sm" 
+                style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b;" 
+                onclick="playVoice('{{ asset('storage/' . $card->voice_invite) }}')">
+            <i class="bi bi-play-circle-fill me-1" style="color: #d97706;"></i> Phát Lời Mời Từ Cặp Đôi
+        </button>
+    </div>
+@endif
     </div>
 
     <img id="preview_cover_img" src="{{ !empty($card->cover_img) ? asset($card->cover_img) : 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800' }}" class="cover-img-3">
@@ -486,20 +491,41 @@
         </div>
     @endif
 
-    <div class="section-block">
+   <div class="section-block">
         <div class="font-mono text-uppercase text-muted mb-2">WISHES</div>
         <div class="hero-title-3 mb-4" style="font-size: 1.5rem;">Gửi Lời Chúc</div>
-        <input class="form-control-3 w-100" placeholder="Tên của bạn...">
-        <textarea class="form-control-3 w-100" rows="3" placeholder="Lời chúc của bạn..."></textarea>
         
-        <div class="d-flex flex-column gap-2 mt-2">
-            <button type="button" class="btn-outline-analog" onclick="recordVoice()">
-                🎤 GHI ÂM LỜI CHÚC
+
+              <form id="wishForm" 
+    @csrf
+    {{-- Nhập tên khách --}}
+    <input type="text" id="wish_name" name="name" class="form-control-3 w-100" placeholder="Tên của bạn..." required>
+    
+    {{-- Lời chúc văn bản --}}
+    <textarea id="wish_text" name="content" class="form-control-3 w-100" rows="3" placeholder="Lời chúc của bạn..."></textarea>
+    
+    {{-- 1. TẢI FILE GHI ÂM CÓ SẴN --}}
+    <div class="text-start mb-3">
+        <label class="form-label font-mono small text-muted mb-1"><i class="bi bi-paperclip me-1"></i> Tải file âm thanh chúc mừng:</label>
+        <input type="file" id="wish_voice_file" name="audio_file" accept="audio/*" class="form-control-3 w-100">
+    </div>
+
+    {{-- 2. GHI ÂM TRỰC TIẾP --}}
+    <div class="p-3 mb-3 text-center border rounded-3" style="border-color: var(--analog-line) !important; background: rgba(255,255,255,0.3);">
+        <div class="font-mono small text-muted mb-2">Hoặc ghi âm trực tiếp tại đây:</div>
+        <div class="d-flex justify-content-center gap-2 align-items-center mb-2">
+            <button type="button" id="btnRecord" class="btn-outline-analog">
+                <i class="bi bi-mic-fill me-1"></i> Bắt đầu ghi âm
             </button>
-            <button type="button" class="btn-analog mt-2" onclick="sendWish()">
-                GỬI LỜI CHÚC
-            </button>
+            <span id="recordTimer" class="font-mono text-danger fw-bold d-none">00:00</span>
         </div>
+        <audio id="audioPreview" controls class="w-100 mt-2 d-none"></audio>
+    </div>
+    
+    <button type="submit" id="btnSubmitWish" class="btn-analog mt-2">
+        GỬI LỜI CHÚC
+    </button>
+</form>
     </div>
 
     <div class="section-block pt-0">
@@ -561,4 +587,5 @@
     </div>
 </div>
 @endsection
+
 

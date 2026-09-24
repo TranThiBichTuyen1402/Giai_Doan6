@@ -384,7 +384,17 @@
             <div class="item"><span id="minutes">00</span><small>Phút</small></div>
             <div class="item"><span id="seconds">00</span><small>Giây</small></div>
         </div>
-
+ <!-- lời mời  -->
+         @if(!empty($card->voice_invite))
+            <div class="my-3 text-center">
+                <button type="button" 
+                        class="btn rounded-pill px-4 py-2 btn-sm fw-bold shadow-sm" 
+                        style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b;" 
+                        onclick="toggleAudio('wedding-audio')">
+                    <i class="bi bi-play-circle-fill me-1" style="color: #d97706;"></i> Phát Lời Mời Từ Cặp Đôi
+                </button>
+            </div>
+        @endif
         <p class="fw-bold mb-3 mt-4 text-light"><i class="bi bi-geo-alt-fill text-warning me-1"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'Trung tâm Tiệc cưới GEM Center, Quận 1, TP.HCM' }}</span></p>
 
         <div class="d-flex justify-content-center gap-2 mb-3">

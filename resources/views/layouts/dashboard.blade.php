@@ -154,13 +154,9 @@
     Tạo Thiệp
 </a>
 
-    <a href="#"
-        class="menu-item">
-
-        <i class="fa fa-user me-2"></i>
-
+   <a href="{{ route('profile.index') }}" class="menu-item">
+    <i class="fa fa-user me-2"></i>
         Tài khoản
-
     </a>
 
     <form action="{{ route('logout') }}"

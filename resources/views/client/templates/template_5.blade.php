@@ -223,9 +223,14 @@
                 </div>
                 <p class="small text-muted mt-2">Bấm "Tiếp theo" để xem thiệp nhé</p>
                 @if(!empty($card->voice_invite))
-                    <button class="btn btn-sm btn-outline-danger rounded-pill mt-3 px-4" onclick="playVoice('{{ asset($card->voice_invite) }}')">
-                        <i class="bi bi-volume-up-fill me-1"></i> Phát lời chào
-                    </button>
+                    <div class="mt-3 text-center">
+                        <button type="button" 
+                                class="btn rounded-pill px-4 py-2 btn-sm fw-bold shadow-sm" 
+                                style="background: #fde8e8; color: #b94a4a; border: 1px solid #f8b4b4;" 
+                                onclick="playVoice('{{ asset(str_starts_with($card->voice_invite, 'storage/') ? $card->voice_invite : 'storage/' . $card->voice_invite) }}')">
+                            <i class="bi bi-play-circle-fill me-1" style="color: #d85c5c;"></i> Phát Lời Mời Từ Cặp Đôi
+                        </button>
+                    </div>
                 @endif
             </div>
         </div>

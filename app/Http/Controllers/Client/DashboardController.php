@@ -59,70 +59,71 @@ class DashboardController extends Controller
     }
 
    public function rsvpList(Request $request)
-    {
-        $allCards = Auth::user()->weddingCards()->latest()->get();
-        $selectedCardId = $request->query('card_id', $allCards->first()?->id);
-        $selectedCard = $allCards->firstWhere('id', $selectedCardId);
+{
+    $allCards = Auth::user()->weddingCards()->latest()->get();
+    $selectedCardId = $request->query('card_id', $allCards->first()?->id);
+    $selectedCard = $allCards->firstWhere('id', $selectedCardId);
 
-        $rsvps = collect();
-        $tables = collect();
-        $unassignedGuests = collect();
-        $wishes = collect();
-        $moments = collect();
+    $rsvps = collect();
+    $tables = collect();
+    $unassignedGuests = collect();
+    $wishes = collect();
+    $moments = collect();
 
-        $stats = [
-            'total_rsvps' => 0, 
-            'attending' => 0, 
-            'total_guests' => 0, 
-            'declined' => 0
-        ];
+    $stats = [
+        'total_rsvps' => 0, 
+        'attending' => 0, 
+        'total_guests' => 0, 
+        'declined' => 0
+    ];
 
-        if ($selectedCard) {
-            // 1. Lấy danh sách khách RSVP
-            $rsvps = $selectedCard->rsvps()->latest()->get();
-            
-            // 2. Thống kê số lượng
-            $stats['total_rsvps'] = $rsvps->count();
-            $stats['attending'] = $rsvps->where('is_attending', true)->count();
-            $stats['total_guests'] = $rsvps->where('is_attending', true)->sum('guest_count');
-            $stats['declined'] = $rsvps->where('is_attending', false)->count();
+    if ($selectedCard) {
+        // 1. Lấy danh sách khách RSVP
+        $rsvps = $selectedCard->rsvps()->latest()->get();
+        
+        // 2. Thống kê số lượng
+        $stats['total_rsvps'] = $rsvps->count();
+        $stats['attending'] = $rsvps->where('is_attending', true)->count();
+        $stats['total_guests'] = $rsvps->where('is_attending', true)->sum('guest_count');
+        $stats['declined'] = $rsvps->where('is_attending', false)->count();
 
-            // 3. Lấy danh sách bàn tiệc kèm thông tin khách trong bàn
-            $tables = WeddingTable::where('wedding_card_id', $selectedCard->id)
-                        ->with('rsvps')
-                        ->get();
+        // 3. Lấy danh sách bàn tiệc kèm thông tin khách trong bàn
+        $tables = WeddingTable::where('wedding_card_id', $selectedCard->id)
+                    ->with('rsvps')
+                    ->get();
 
-            // 4. Khách xác nhận ĐI nhưng CHƯA xếp bàn (table_id = null)
-           // 4. Lấy TẤT CẢ khách CHƯA xếp bàn (không phân biệt đi hay chưa phản hồi)
-$unassignedGuests = WeddingRsvp::where('wedding_card_id', $selectedCard->id)
-    ->where(function($query) {
-        $query->whereNull('table_id')
-              ->orWhere('table_id', 0);
-    })
-    ->get();
+        // 4. Lấy TẤT CẢ khách CHƯA xếp bàn
+        $unassignedGuests = WeddingRsvp::where('wedding_card_id', $selectedCard->id)
+            ->where(function($query) {
+                $query->whereNull('table_id')
+                      ->orWhere('table_id', 0);
+            })
+            ->get();
 
-            // 5. Lấy Lời chúc (Nếu đã có Model Wish, nếu chưa thì để mặc định rỗng)
-            if (class_exists('App\Models\Wish')) {
-                $wishes = \App\Models\Wish::where('wedding_card_id', $selectedCard->id)->latest()->get();
-            }
+        // 5. [ĐÃ SỬA] Lấy Lời chúc & Voice ghi âm từ bảng WeddingRsvp
+        $wishes = WeddingRsvp::where('wedding_card_id', $selectedCard->id)
+            ->where(function ($query) {
+                $query->whereNotNull('message')
+                      ->orWhereNotNull('voice_file');
+            })
+            ->latest()
+            ->get();
 
-            // 6. Lấy Kho ảnh (Nếu đã có Model Moment, nếu chưa thì để mặc định rỗng)
-$moments = \App\Models\GalleryPhoto::where('wedding_card_id', $selectedCard->id)->latest()->get();        
-
-        }
-
-        return view('client.rsvp-list', compact(
-            'selectedCard', 
-            'allCards', 
-            'rsvps', 
-            'tables', 
-            'stats', 
-            'unassignedGuests',
-            'wishes', 
-            'moments'
-        ));
+        // 6. Lấy Kho ảnh
+        $moments = \App\Models\GalleryPhoto::where('wedding_card_id', $selectedCard->id)->latest()->get();        
     }
 
+    return view('client.rsvp-list', compact(
+        'selectedCard', 
+        'allCards', 
+        'rsvps', 
+        'tables', 
+        'stats', 
+        'unassignedGuests',
+        'wishes', 
+        'moments'
+    ));
+}
     public function storeTable(Request $request)
     {
         $request->validate([

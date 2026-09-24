@@ -19,6 +19,7 @@ class WeddingRsvp extends Model
         'guest_count',
         'phone',
         'message',
+        'voice_file',
         'is_attending',
     ];
 

@@ -113,6 +113,8 @@ class WeddingCardController extends Controller
         $card->fill($data);
         $card->id = null;
         $card->slug = null;
+        $card->is_vip = false;
+        $card->package_type = 'free';
         $card->user_id = Auth::id();
 
         return view('client.builder', compact('card', 'templateId'));
@@ -236,18 +238,35 @@ class WeddingCardController extends Controller
                 $card->bride_avatar = $request->file('bride_avatar')->store('wedding_avatars', 'public');
             }
 
-           // Xác định gói dịch vụ hiện tại
-            $package = $card->package_type ?? ($card->is_vip ? 'vip_pro' : 'free');
-
-            // Cả gói STANDARD (99k) và VIP PRO (199k) đều được lưu nhạc nền
-            if (in_array($package, ['standard', 'vip_pro'])) {
-                if ($request->hasFile('bg_music')) {
-                    $card->bg_music = $request->file('bg_music')->store('wedding_audio', 'public');
+           // 1. Phân biệt rõ Thiệp Mới vs Thiệp Đã Tồn Tại trong DB
+            if (!$request->filled('card_id') && !$card->exists) {
+                // THIỆP MỚI HOÀN TOÀN -> Bắt buộc là FREE 100%
+                $card->is_vip = false;
+                $card->package_type = 'free';
+            } else {
+                // THIỆP ĐÃ TỒN TẠI TRONG DB -> Giữ nguyên trạng thái VIP hiện tại trong DB
+                if ($request->has('package_type')) {
+                    $card->package_type = $request->input('package_type');
+                    $card->is_vip = in_array($card->package_type, ['vip_pro', 'standard']);
+                } elseif ($request->has('is_vip')) {
+                    $card->is_vip = $request->boolean('is_vip');
+                    $card->package_type = $card->is_vip ? 'vip_pro' : 'free';
                 }
             }
 
-            // Chỉ duy nhất gói VIP PRO (199k) mới lưu Voice Lời Mời & Lời Cảm Ơn
-            if ($package === 'vip_pro') {
+            if ($card->is_vip) {
+                $card->vip_expires_at = $card->vip_expires_at ?? now()->addYears(2);
+            }
+
+            $package = $card->package_type;
+
+            // 2. Cả gói STANDARD (99k) và VIP PRO (199k) đều được lưu nhạc nền
+            if ($request->hasFile('bg_music')) {
+                $card->bg_music = $request->file('bg_music')->store('wedding_audio', 'public');
+            }
+
+            // 3. Chỉ duy nhất gói VIP PRO (199k) mới lưu Voice Lời Mời & Lời Cảm Ơn
+            if ($package === 'vip_pro' || $card->is_vip) {
                 if ($request->hasFile('voice_invite')) {
                     $card->voice_invite = $request->file('voice_invite')->store('wedding_audio', 'public');
                 }
@@ -256,6 +275,7 @@ class WeddingCardController extends Controller
                 }
             }
 
+            // 4. Lưu Album Ảnh
             if ($request->hasFile('album_imgs')) {
                 $albumFiles = $request->file('album_imgs');
                 if (!$card->is_vip) {
@@ -267,11 +287,8 @@ class WeddingCardController extends Controller
                 }
                 $card->album_imgs = $albumPaths;
             }
-// ⚡ THÊM ĐOẠN NÀY: Kiểm tra nếu request có gửi cờ nâng VIP hoặc package VIP
-            if ($request->has('is_vip') || $request->input('package_type') === 'vip_pro' || $request->input('package_type') === 'standard') {
-                $card->is_vip = true;
-                $card->vip_expires_at = now()->addYears(2);
-            }
+
+            // 5. Lưu vào Database
             $card->save();
 
             if (!Auth::check()) {

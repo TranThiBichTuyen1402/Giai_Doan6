@@ -452,15 +452,18 @@
         </div>
     </div>
     {{-- LỜI CHÚC --}}
+    {{-- LỜI CHÚC --}}
     <div class="white-card">
-        <div class="card-header-title">LỜI CHÚC</div>
-        <input id="wishName" class="form-control mb-3" placeholder="Tên của bạn">
-        <textarea id="wishMessage" class="form-control mb-3" rows="4" placeholder="Nhập lời chúc"></textarea>
-        <div class="d-flex gap-2 justify-content-center">
-            <button type="button" class="btn btn-outline-danger" onclick="recordVoice()">🎤 Lời chúc giọng nói</button>
-            <button type="button" class="btn btn-danger" onclick="sendWish()">Gửi lời chúc</button>
-        </div>
-        <div class="mt-4">
+        <div class="card-header-title">LỜI CHÚC MỪNG</div>
+        <p class="small text-white-50 mb-3" style="font-size: 0.85rem;">
+            Hãy gửi những lời chúc tốt đẹp hoặc lời chúc bằng giọng nói đến cặp đôi nhé!
+        </p>
+
+        <button type="button" class="btn btn-outline-warning rounded-pill px-4 py-2 w-100 fw-bold mb-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#wishModal">
+            <i class="bi bi-mic-fill me-1 text-danger"></i> GỬI LỜI CHÚC / GHI ÂM
+        </button>
+
+        <div class="mt-2">
             <button class="btn btn-rsvp-rose" data-bs-toggle="modal" data-bs-target="#rsvpModal">
                 <i class="bi bi-envelope-check-fill me-1.5"></i> Xác Nhận Tham Dự (RSVP)
             </button>
@@ -468,6 +471,52 @@
         <p class="small text-white-50 mt-2" style="font-size: 0.82rem; line-height: 1.5;" data-field="thank_msg">
             {{ $card->thank_msg ?? 'Sự hiện diện của quý vị là niềm vinh hạnh lớn nhất của gia đình chúng tôi!' }}
         </p>
+    </div>
+</div>
+
+{{-- MODAL GỬI LỜI CHÚC & THU ÂM TRỰC TIẾP / UPLOAD FILE --}}
+<div class="modal fade" id="wishModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow text-dark">
+            <div class="modal-body p-4 text-start">
+                <h5 class="fw-bold text-center text-dark mb-3">Gửi Lời Chúc Mừng</h5>
+                <form id="wishForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tên của bạn</label>
+                        <input type="text" id="wish_name" name="name" class="form-control rounded-pill px-3" required placeholder="Nhập tên của bạn">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Lời chúc mừng</label>
+                        <textarea id="wish_text" name="message" class="form-control rounded-3 px-3" rows="3" placeholder="Nhập lời chúc tốt đẹp nhất..."></textarea>
+                    </div>
+
+                    {{-- TÙY CHỌN 1: UPLOAD FILE GHI ÂM --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="bi bi-file-earmark-music text-danger me-1"></i> Tải file lời chúc âm thanh</label>
+                        <input type="file" id="wish_voice_file" accept="audio/*" class="form-control form-control-sm rounded-pill px-3">
+                        <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(Chấp nhận MP3, WAV, M4A... Max 10MB)</small>
+                    </div>
+
+                    <div class="text-center text-muted small my-2 fw-bold">Hoặc</div>
+
+                    {{-- TÙY CHỌN 2: THU ÂM TRỰC TIẾP --}}
+                    <div class="mb-3 p-3 border rounded-4 bg-light text-center">
+                        <label class="form-label small fw-bold d-block mb-2"><i class="bi bi-mic-fill text-danger me-1"></i> Gửi kèm Giọng nói trực tiếp</label>
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <button type="button" id="btnRecord" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                                <i class="bi bi-record-circle me-1"></i> Bấm để ghi âm
+                            </button>
+                            <span id="recordTimer" class="small text-danger fw-bold d-none">00:00</span>
+                        </div>
+                        <audio id="audioPreview" controls class="w-100 mt-2 d-none"></audio>
+                    </div>
+
+                    <button type="submit" id="btnSubmitWish" class="btn btn-danger w-100 rounded-pill py-2.5 fw-bold mt-2" style="background: var(--primary-rose, #e11d48); border:none;">GỬI LỜI CHÚC</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -521,4 +570,122 @@
     </div>
 </div>
 @endsection
+<!-- @push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordedAudioBlob = null;
+    let timerInterval = null;
+    let secondsElapsed = 0;
 
+    const btnRecord = document.getElementById('btnRecord');
+    const recordTimer = document.getElementById('recordTimer');
+    const audioPreview = document.getElementById('audioPreview');
+    const wishForm = document.getElementById('wishForm');
+    const fileInput = document.getElementById('wish_voice_file');
+
+    // 1. Xử lý logic Bấm Ghi Âm / Dừng Ghi Âm
+    if (btnRecord) {
+        btnRecord.addEventListener('click', async () => {
+            if (!mediaRecorder || mediaRecorder.state === "inactive") {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    
+                    mediaRecorder.onstop = () => {
+                        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(recordedAudioBlob);
+                        audioPreview.src = audioUrl;
+                        audioPreview.classList.remove('d-none');
+                        
+                        // Reset bộ đếm
+                        clearInterval(timerInterval);
+                        recordTimer.classList.add('d-none');
+                        btnRecord.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Thu âm lại';
+                        btnRecord.className = "btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold";
+                    };
+
+                    mediaRecorder.start();
+                    
+                    // Bật bộ đếm thời gian
+                    secondsElapsed = 0;
+                    recordTimer.innerText = "00:00";
+                    recordTimer.classList.remove('d-none');
+                    timerInterval = setInterval(() => {
+                        secondsElapsed++;
+                        let secs = secondsElapsed % 60;
+                        let mins = Math.floor(secondsElapsed / 60);
+                        recordTimer.innerText = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                    }, 1000);
+
+                    btnRecord.innerHTML = '<i class="bi bi-stop-circle-fill me-1"></i> Dừng & Lưu';
+                    btnRecord.className = "btn btn-danger btn-sm rounded-pill px-3 fw-bold animate__animated animate__pulse animate__infinite";
+                } catch (err) {
+                    alert("Vui lòng cho phép trình duyệt truy cập Microphone!");
+                }
+            } else if (mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+        });
+    }
+
+    // 2. Xử lý Submit Form Lời chúc
+    if (wishForm) {
+        wishForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('wish_name').value.trim();
+            const message = document.getElementById('wish_text').value.trim();
+            const btnSubmit = document.getElementById('btnSubmitWish');
+
+            if (!name) {
+                alert("Vui lòng nhập tên của bạn!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('name', name);
+            formData.append('message', message || '[Lời chúc bằng giọng nói]');
+
+            // Kiểm tra ưu tiên: File upload > Record trực tiếp
+            if (fileInput.files.length > 0) {
+                formData.append('audio', fileInput.files[0]);
+            } else if (recordedAudioBlob) {
+                formData.append('audio', recordedAudioBlob, 'voice_wish.webm');
+            }
+
+            const cardSlug = "{{ $card->slug ?? 'sample' }}";
+            const targetUrl = "{{ url('/wedding-invitation') }}/" + cardSlug + "/voice-wish";
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></i> Đang gửi...';
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message || 'Đã gửi lời chúc thành công!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+                }
+            } catch (error) {
+                alert('Không thể kết nối đến máy chủ!');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = 'GỬI LỜI CHÚC';
+            }
+        });
+    }
+});
+</script>
+@endpush -->

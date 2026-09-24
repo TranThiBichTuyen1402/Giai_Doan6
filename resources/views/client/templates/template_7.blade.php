@@ -391,10 +391,12 @@
                  class="img-fluid rounded-4 shadow-sm"
                  style="border: 2px solid var(--accent-gold);"
                  alt="Cover Photo">      
-            @if(!empty($card->voice_invite))
-                <div class="mt-3">
-                    <button class="btn btn-outline-warning btn-sm rounded-pill px-4 py-2 text-warning" onclick="playVoice('{{ asset($card->voice_invite) }}')">
-                        <i class="bi bi-volume-up-fill me-1"></i> Nghe lời mời
+           @if(!empty($card->voice_invite))
+                <div class="mt-3 text-center">
+                    <button type="button" 
+                            class="btn btn-outline-warning btn-sm rounded-pill px-4 py-2 text-warning fw-semibold shadow-sm" 
+                            onclick="playVoice('{{ asset(str_starts_with($card->voice_invite, 'storage/') ? $card->voice_invite : 'storage/' . $card->voice_invite) }}')">
+                        <i class="bi bi-volume-up-fill me-1"></i> Nghe Lời Mời Từ Cặp Đôi
                     </button>
                 </div>
             @endif

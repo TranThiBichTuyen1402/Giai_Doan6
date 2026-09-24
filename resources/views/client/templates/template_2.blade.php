@@ -305,13 +305,17 @@
                 <div class="time-box-2"><span id="cd-secs">00</span><small>Giây</small></div>
             </div>
 
-            @if(!empty($card->voice_invite))
-                <div class="mt-3">
-                    <button class="btn btn-sm rounded-pill text-white px-4 py-2 fw-semibold shadow-sm" style="background: var(--korean-pink);" onclick="playVoice('{{ asset($card->voice_invite) }}')">
-                        <i class="bi bi-play-circle-fill me-1"></i> Phát Lời Mời Từ Cặp Đôi
-                    </button>
-                </div>
-            @endif
+          {{-- Dán đoạn này vào Template 2 hệt như Template 1 --}}
+@if(!empty($card->voice_invite))
+    <div class="mb-4 text-center">
+        <button type="button" 
+                class="btn rounded-pill px-4 py-2 btn-sm fw-bold shadow-sm text-white" 
+                style="background: linear-gradient(135deg, #e17575, #c85a5a); border: 1px solid #f3a6a6;" 
+                onclick="playVoice('{{ asset('storage/' . $card->voice_invite) }}')">
+            <i class="bi bi-play-circle-fill me-1"></i> Phát Lời Mời Từ Cặp Đôi
+        </button>
+    </div>
+@endif
         </div>
 
         <img id="preview_cover_img" src="{{ !empty($card->cover_img) ? asset($card->cover_img) : 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80' }}" class="cover-photo-card-2">
@@ -545,19 +549,18 @@
             </div>
         @endif
 
+       {{-- LỜI CHÚC MỪNG --}}
         <div class="paper-frame">
-            <div class="card-header-title-2"><i class="bi bi-chat-heart me-1"></i> LỜI CHÚC</div>
-            <input class="form-control mb-3" placeholder="Tên của bạn">
-            <textarea class="form-control mb-3" rows="3" placeholder="Nhập lời chúc mừng..."></textarea>
-            
-            <div class="d-flex flex-column gap-2">
-                <button type="button" class="btn btn-outline-danger rounded-pill py-2" style="color: var(--korean-pink); border-color: var(--korean-pink);" onclick="recordVoice()">
-                    🎤 Gửi lời chúc bằng giọng nói
-                </button>
-                <button type="button" class="btn text-white rounded-pill py-2 fw-semibold" style="background: var(--korean-pink);" onclick="sendWish()">
-                    Gửi Lời Chúc
-                </button>
-            </div>
+            <div class="card-header-title-2"><i class="bi bi-chat-heart me-1"></i> LỜI CHÚC MỪNG</div>
+            <p class="small text-muted mb-3" style="font-size: 0.85rem;">
+                Hãy gửi những lời chúc tốt đẹp hoặc lời chúc bằng giọng nói đến cặp đôi nhé!
+            </p>
+
+            <button type="button" class="btn btn-outline-danger rounded-pill px-4 py-2 w-100 fw-semibold shadow-sm mb-3" 
+                    style="color: var(--korean-pink); border-color: var(--korean-pink);" 
+                    data-bs-toggle="modal" data-bs-target="#wishModal">
+                <i class="bi bi-mic-fill me-1"></i> GỬI LỜI CHÚC / GHI ÂM
+            </button>
         </div>
 
         <div class="paper-frame pt-0">
@@ -569,8 +572,53 @@
                 "{{ $card->thank_msg ?? 'Sự hiện diện của quý vị là niềm vinh hạnh lớn nhất của gia đình chúng tôi!' }}"
             </p>
         </div>
-
     </div>
+
+{{-- MODAL GỬI LỜI CHÚC & THU ÂM TRỰC TIẾP / UPLOAD FILE --}}
+<div class="modal fade" id="wishModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow text-dark">
+            <div class="modal-body p-4 text-start">
+                <h5 class="fw-bold text-center mb-3" style="color: var(--korean-pink);">Gửi Lời Chúc Mừng</h5>
+                <form id="wishForm" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tên của bạn</label>
+                        <input type="text" id="wish_name" name="name" class="form-control rounded-pill px-3" required placeholder="Nhập tên của bạn">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Lời chúc mừng</label>
+                        <textarea id="wish_text" name="message" class="form-control rounded-3 px-3" rows="3" placeholder="Nhập lời chúc tốt đẹp nhất..."></textarea>
+                    </div>
+
+                    {{-- TÙY CHỌN 1: UPLOAD FILE GHI ÂM --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="bi bi-file-earmark-music text-danger me-1"></i> Tải file lời chúc âm thanh</label>
+                        <input type="file" id="wish_voice_file" accept="audio/*" class="form-control form-control-sm rounded-pill px-3">
+                        <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(Chấp nhận MP3, WAV, M4A... Max 10MB)</small>
+                    </div>
+
+                    <div class="text-center text-muted small my-2 fw-bold">Hoặc</div>
+
+                    {{-- TÙY CHỌN 2: THU ÂM TRỰC TIẾP --}}
+                    <div class="mb-3 p-3 border rounded-4 bg-light text-center">
+                        <label class="form-label small fw-bold d-block mb-2"><i class="bi bi-mic-fill text-danger me-1"></i> Gửi kèm Giọng nói trực tiếp</label>
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <button type="button" id="btnRecord" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                                <i class="bi bi-record-circle me-1"></i> Bấm để ghi âm
+                            </button>
+                            <span id="recordTimer" class="small text-danger fw-bold d-none">00:00</span>
+                        </div>
+                        <audio id="audioPreview" controls class="w-100 mt-2 d-none"></audio>
+                    </div>
+
+                    <button type="submit" id="btnSubmitWish" class="btn text-white w-100 rounded-pill py-2.5 fw-bold mt-2" style="background: var(--korean-pink);">GỬI LỜI CHÚC</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
     <div class="modal fade" id="rsvpModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

@@ -34,6 +34,22 @@
             box-shadow: 0 4px 15px rgba(225, 29, 72, 0.5); cursor: pointer; border: 2px solid white;
         }
         .music-spinning { animation: spin 4s linear infinite; }
+        /* Style Nút Voice Lời Mời Floating */
+        .voice-toggle-btn {
+            position: fixed; bottom: 85px; right: 25px;
+            z-index: 999; width: 50px; height: 50px;
+            border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #e11d48);
+            color: white; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5); cursor: pointer; border: 2px solid white;
+            transition: transform 0.2s ease;
+        }
+        .voice-toggle-btn:hover { transform: scale(1.1); }
+        .voice-playing { animation: voicePulse 1.5s infinite; }
+        @keyframes voicePulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
     @stack('styles')
@@ -43,11 +59,18 @@
 <canvas id="particle-canvas"></canvas>
 
 @php
-    $bgMusic = !empty($card->bg_music)
-        ? asset('storage/' . ltrim($card->bg_music, '/'))
+    // Nhạc nền
+    $bgMusic = !empty($card->bg_music) 
+        ? asset('storage/' . ltrim(str_replace('storage/', '', $card->bg_music), '/')) 
+        : null;
+
+    // Voice lời mời
+    $voiceInvite = !empty($card->voice_invite) 
+        ? asset('storage/' . ltrim(str_replace('storage/', '', $card->voice_invite), '/')) 
         : null;
 @endphp
 
+{{-- KHỐI NHẠC NỀN (Chỉ hiện khi thiệp có upload nhạc) --}}
 @if($bgMusic)
     <div class="music-toggle-btn music-spinning" id="music-control-btn" title="Bật/Tắt Nhạc">
         <i class="bi bi-disc fs-4"></i>
@@ -55,6 +78,14 @@
     <audio id="bg-audio" src="{{ $bgMusic }}" loop></audio>
 @endif
 
+{{-- KHỐI VOICE LỜI MỜI (Chỉ hiện khi thiệp VIP và có Upload Voice) --}}
+@if($voiceInvite)
+    <div class="voice-toggle-btn" id="voice-control-btn" onclick="toggleVoiceInvite()" title="Phát Voice Lời Mời" 
+         style="position: fixed; bottom: 85px; right: 25px; z-index: 99999; width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #e11d48); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+        <i class="bi bi-mic-fill fs-5" id="voiceIcon"></i>
+    </div>
+    <audio id="voice-audio" src="{{ $voiceInvite }}"></audio>
+@endif
 {{-- NƠI GIAO DIỆN CỦA MẪU 1, MẪU 2, MẪU 3 SẼ ĐƯỢC HIỂN THỊ --}}
 @yield('content')
 
@@ -108,25 +139,107 @@
     animateParticles();
 
     // 2. Control Nhạc Nền Chung
+    // 2. Control Nhạc Nền + Tự động phát khi khách chạm màn hình
     const musicBtn = document.getElementById('music-control-btn');
     const bgAudio = document.getElementById('bg-audio');
-    if (musicBtn && bgAudio) {
-        let isPlaying = false;
-        musicBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                bgAudio.pause();
-                musicBtn.classList.remove('music-spinning');
-            } else {
-                bgAudio.play();
-                musicBtn.classList.add('music-spinning');
-            }
-            isPlaying = !isPlaying;
-        });
+
+    if (bgAudio) {
+        // Tự động phát ngay khi khách chạm/click lần đầu tiên vào bất kỳ đâu trên thiệp
+        const playOnFirstTouch = () => {
+            bgAudio.play().then(() => {
+                if (musicBtn) musicBtn.classList.add('music-spinning');
+            }).catch(() => {});
+            
+            // Chạy 1 lần xong gỡ sự kiện đi
+            document.removeEventListener('click', playOnFirstTouch);
+            document.removeEventListener('touchstart', playOnFirstTouch);
+        };
+
+        document.addEventListener('click', playOnFirstTouch);
+        document.addEventListener('touchstart', playOnFirstTouch);
+
+        if (musicBtn) {
+            musicBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!bgAudio.paused) {
+                    bgAudio.pause();
+                    musicBtn.classList.remove('music-spinning');
+                } else {
+                    // Tắt Voice nếu đang phát
+                    const voiceAudio = document.getElementById('voice-audio');
+                    const voiceBtn = document.getElementById('voice-control-btn');
+                    const voiceIcon = document.getElementById('voiceIcon');
+                    if (voiceAudio && !voiceAudio.paused) {
+                        voiceAudio.pause();
+                        if (voiceBtn) voiceBtn.classList.remove('voice-playing');
+                        if (voiceIcon) voiceIcon.className = 'bi bi-mic-fill fs-5';
+                    }
+
+                    bgAudio.play();
+                    musicBtn.classList.add('music-spinning');
+                }
+            });
+        }
+        // Nút Bật/Tắt tròn ở góc màn hình
+        if (musicBtn) {
+            musicBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Tránh dính sự kiện click toàn trang
+                if (!bgAudio.paused) {
+                    bgAudio.pause();
+                    musicBtn.classList.remove('music-spinning');
+                } else {
+                    bgAudio.play();
+                    musicBtn.classList.add('music-spinning');
+                }
+            });
+        }
     }
      window.WEDDING_DATE = "{{ $card->wedding_date ?? '2026-12-12' }}";
     window.IS_DEMO = {{ !empty($isDemo) ? 'true' : 'false' }};
     window.BUILDER_URL = "{{ route('card.builder', $card->id ?? 1) }}";
-    
+
+    // Control Voice Lời Mời Floating
+    function toggleVoiceInvite() {
+    const voiceAudio = document.getElementById('voice-audio');
+    const voiceBtn = document.getElementById('voice-control-btn');
+    const voiceIcon = document.getElementById('voiceIcon');
+    const bgAudio = document.getElementById('bg-audio');
+    const musicBtn = document.getElementById('music-control-btn');
+
+    if (!voiceAudio) return;
+
+    if (!voiceAudio.paused) {
+        // Tắt Voice
+        voiceAudio.pause();
+        if (voiceBtn) voiceBtn.classList.remove('voice-playing');
+        if (voiceIcon) voiceIcon.className = 'bi bi-mic-fill fs-5';
+    } else {
+        // Nếu nhạc nền đang chạy -> Tắt nhạc nền trước
+        if (bgAudio && !bgAudio.paused) {
+            bgAudio.pause();
+            if (musicBtn) musicBtn.classList.remove('music-spinning');
+        }
+
+        // Bật Voice
+        voiceAudio.play().then(() => {
+            if (voiceBtn) voiceBtn.classList.add('voice-playing');
+            if (voiceIcon) voiceIcon.className = 'bi bi-pause-fill fs-4';
+        }).catch(err => console.log('Chặn autoplay:', err));
+    }
+}
+
+// Tự động chuyển icon về Micro khi nghe hết Voice
+document.addEventListener('DOMContentLoaded', () => {
+    const voiceAudio = document.getElementById('voice-audio');
+    if (voiceAudio) {
+        voiceAudio.addEventListener('ended', () => {
+            const voiceBtn = document.getElementById('voice-control-btn');
+            const voiceIcon = document.getElementById('voiceIcon');
+            if (voiceBtn) voiceBtn.classList.remove('voice-playing');
+            if (voiceIcon) voiceIcon.className = 'bi bi-mic-fill fs-5';
+        });
+    }
+});
   // cây but chỉnh sửa sẽ chỉ hiển thị khi ở chế độ editor, không hiển thị cho khách xem thiệp
     // AUTOMATIC STICKY BAR FOR LIVE DEMO MODE
     @if(!empty($isDemo))
@@ -296,7 +409,154 @@ window.addEventListener('message', function (e) {
     if (e.data.field === 'map_link') { 
         window.currentMapUrl = e.data.value; 
     } 
-}); 
+    // Cập nhật Voice lời mời từ Builder (Live Preview)
+        if (event.data.type === 'UPDATE_CARD_FIELD' && event.data.field === 'voice_invite') {
+            let voiceAudioEl = document.getElementById('voice-audio');
+            let voiceBtn = document.getElementById('voice-control-btn');
+
+            if (!voiceAudioEl) {
+                voiceAudioEl = document.createElement('audio');
+                voiceAudioEl.id = 'voice-audio';
+                document.body.appendChild(voiceAudioEl);
+            }
+
+            voiceAudioEl.src = event.data.value;
+            
+            if (!voiceBtn) {
+                const btnHtml = `
+                    <div class="voice-toggle-btn" id="voice-control-btn" onclick="toggleVoiceInvite()" title="Phát/Tạm dừng Voice Lời Mời">
+                        <i class="bi bi-mic-fill fs-5" id="voiceIcon"></i>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', btnHtml);
+            }
+        }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedAudioBlob = null;
+
+    const btnRecord = document.getElementById('btnRecord') || document.querySelector('.btn-voice-wish');
+    const audioPreview = document.getElementById('audioPreview');
+    const wishForm = document.getElementById('wishForm') || document.querySelector('form[action*="voice-wish"]');
+
+    // 1. Xử lý ghi âm Voice
+    if (btnRecord) {
+        btnRecord.addEventListener('click', async () => {
+            if (!mediaRecorder || mediaRecorder.state === "inactive") {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    
+                    mediaRecorder.onstop = () => {
+                        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        if (audioPreview) {
+                            audioPreview.src = URL.createObjectURL(recordedAudioBlob);
+                            audioPreview.classList.remove('d-none');
+                        }
+                        btnRecord.innerHTML = '🔄 Thu âm lại';
+                    };
+
+                    mediaRecorder.start();
+                    btnRecord.innerHTML = '⏹️ Dừng thu âm';
+                } catch (err) {
+                    alert("Vui lòng cấp quyền Microphone trên trình duyệt!");
+                }
+            } else if (mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+            }
+        });
+    }
+
+    // 2. Xử lý Gửi Form Lời Chúc & Voice
+    if (wishForm) {
+        wishForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Tự động tìm ô input Tên & Lời chúc bất kể ID là gì
+            const nameInput = document.getElementById('wish_name') || wishForm.querySelector('input[name="name"]') || wishForm.querySelector('input[type="text"]');
+            const noteInput = document.getElementById('wish_text') || wishForm.querySelector('textarea[name="note"]') || wishForm.querySelector('textarea');
+            const fileInput = document.getElementById('wish_voice_file') || wishForm.querySelector('input[type="file"]');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+            const note = noteInput ? noteInput.value.trim() : '';
+
+            if (!name) {
+                alert("Vui lòng nhập tên của bạn!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('name', name);
+            formData.append('note', note || '[Lời chúc bằng giọng nói]');
+
+            // Ưu tiên 1: File ghi âm trực tiếp -> Ưu tiên 2: File chọn từ máy
+            if (recordedAudioBlob) {
+                formData.append('audio', recordedAudioBlob, 'voice_wish.webm');
+            } else if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                formData.append('audio', fileInput.files[0]);
+            }
+
+            const routeUrl = "{{ route('wedding.voiceWish', $card->slug ?? 'sample') }}";
+
+            try {
+                const response = await fetch(routeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const resData = await response.json();
+                if (response.ok && resData.success) {
+                    alert("Gửi lời chúc & Voice thành công! ❤️");
+                    location.reload();
+                } else {
+                    alert(resData.message || "Gửi thất bại!");
+                }
+            } catch (err) {
+                alert("Lỗi kết nối máy chủ!");
+            }
+        });
+    }
+});
+// =========================================================================
+    // 3. LẮNG NGHE LỆNH TỪ TRANG BUILDER ĐỂ PHÁT NHẠC NỀN XEM THỬ (LIVE PREVIEW)
+    // =========================================================================
+    window.addEventListener('message', function (event) {
+        if (!event.data) return;
+
+        // Bắt sự kiện khi bên trang Builder đẩy nhạc sang
+        if (event.data.type === 'UPDATE_CARD_FIELD' && event.data.field === 'bg_music') {
+            let audioEl = document.getElementById('bg-audio');
+
+            // Nếu mẫu thiệp chưa có sẵn thẻ <audio> thì tự tạo mới
+            if (!audioEl) {
+                audioEl = document.createElement('audio');
+                audioEl.id = 'bg-audio';
+                audioEl.loop = true;
+                document.body.appendChild(audioEl);
+            }
+
+            // Gán đường dẫn file nhạc mới vừa chọn từ Builder
+            audioEl.src = event.data.value;
+
+            // Phát nhạc
+            audioEl.play().then(() => {
+                const musicBtn = document.getElementById('music-control-btn');
+                if (musicBtn) musicBtn.classList.add('music-spinning');
+            }).catch(err => {
+                console.log("Trình duyệt chặn Autoplay nhạc. Bấm vào Preview để nghe thử!");
+            });
+        }
+    });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/wedding-builder.js') }}"></script>

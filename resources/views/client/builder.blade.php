@@ -20,7 +20,27 @@
         .preview-stage { height: calc(100vh - 60px); overflow-y: auto; background: #090d16; display: flex; justify-content: center; align-items: flex-start; padding: 30px 15px; }
         .phone-mockup { width: 100%; max-width: 410px; height: 760px; background: #0f172a; border-radius: 36px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7); border: 10px solid #2b2b2b; overflow: hidden; position: relative; color: #ffffff; }
         .btn-pink { background: #e11d48; color: #fff; border: none; font-weight: 600; }
-        .btn-pink:hover { background: #be123c; color: #fff; }
+.btn-pink:hover { background: #be123c; color: #fff; }
+
+/* Thêm đoạn này vào bên dưới */
+.badge-vip { background: linear-gradient(45deg, #f59e0b, #d97706); color: #fff; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; }
+.vip-feature-wrapper { position: relative; }
+.vip-lock-overlay { 
+    position: absolute; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background: rgba(255, 255, 255, 0.45); /* Giảm độ đục nền trắng từ 0.75 xuống 0.45 */
+    backdrop-filter: blur(1px);            /* Giảm độ nhòe mờ từ 2px xuống 1px */
+    -webkit-backdrop-filter: blur(1px);    /* Hỗ trợ thêm trên trình duyệt Safari/iOS */
+    z-index: 10; 
+    cursor: pointer; 
+    border-radius: 8px; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.2s ease;
+}
+.vip-lock-overlay:hover { background: rgba(255, 255, 255, 0.85); }
         
         /* CSS Badge VIP & Feature Lock */
         .badge-vip { background: linear-gradient(45deg, #f59e0b, #d97706); color: #fff; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; }
@@ -256,31 +276,48 @@ value="{{ old('groom_name', $card->groom_name) }}">
                         <div class="mb-2"><input type="text" name="bride_bank_owner" class="form-control form-control-sm" placeholder="Chủ tài khoản" value="{{ old('bride_bank_owner', $card->bride_bank_owner) }}"></div>
                     </div>
 
-                    <div class="card p-3 mb-3 border-0 bg-light rounded-3 vip-feature-wrapper">
+          <!-- NHẠC NỀN & VOICE LỜI MỜI (ĐÃ ĐƯỢC KHÓA NẾU LÀ FREE) -->
+<div class="card p-3 mb-3 border-0 bg-light rounded-3 vip-feature-wrapper">
     @if(!$isVip)
-        <!-- Cảnh báo dùng thử nhỏ gọn -->
-        <div class="alert alert-warning py-2 px-3 mb-3 border-0 rounded-3 d-flex align-items-center justify-content-between small">
-            <span><i class="bi bi-info-circle-fill me-1"></i> Bạn đang dùng thử tính năng VIP</span>
-            <button type="button" class="btn btn-warning btn-sm py-0 px-2 fw-bold" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal" style="font-size: 0.75rem;">
-                👑 Nâng VIP
+        <!-- Lớp phủ Khóa Tính Năng VIP -->
+        <div class="vip-lock-overlay" data-bs-toggle="modal" data-bs-target="#vipUpgradeModal">
+            <i class="bi bi-lock-fill text-warning fs-3 mb-1"></i>
+            <span class="fw-bold text-dark mb-1">Tính Năng VIP</span>
+            <button type="button" class="btn btn-warning btn-sm py-1 px-3 fw-bold shadow-sm rounded-pill" style="font-size: 0.78rem;">
+                👑 Nâng VIP Để Tải File
             </button>
         </div>
     @endif
 
     <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-music-note-beamed me-2"></i>Nhạc Nền & Voice Lời Mời</h6>
-                            <span class="badge-vip">👑 Gói VIP</span>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold">Upload Nhạc Nền Riêng (.mp3)</label>
-                            <input type="file" name="bg_music" class="form-control form-control-sm" accept="audio/*">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold">Upload Voice Lời Mời (.mp3)</label>
-                            <input type="file" name="voice_invite" class="form-control form-control-sm" accept="audio/*">
-                        </div>
-                    </div>
+        <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-music-note-beamed me-2"></i>Nhạc Nền & Voice Lời Mời</h6>
+        <span class="badge-vip">👑 Gói VIP</span>
+    </div>
 
+    <div class="mb-2">
+        <label class="form-label small fw-semibold">Upload Nhạc Nền Riêng (.mp3)</label>
+        <input type="file" name="bg_music" class="form-control form-control-sm" accept="audio/*" {{ !$isVip ? 'disabled' : '' }}>
+        
+        @if(!empty($card->bg_music))
+            <div class="mt-1 small text-success fw-bold d-flex align-items-center gap-1">
+                <i class="bi bi-music-note-beamed"></i>
+                <span>Đã có nhạc nền: {{ basename($card->bg_music) }}</span>
+            </div>
+        @endif
+    </div>
+
+    <div class="mb-2">
+        <label class="form-label small fw-semibold">Upload Voice Lời Mời (.mp3)</label>
+        <input type="file" name="voice_invite" class="form-control form-control-sm" accept="audio/*" {{ !$isVip ? 'disabled' : '' }}>
+        
+        @if(!empty($card->voice_invite))
+            <div class="mt-1 small text-success fw-bold d-flex align-items-center gap-1">
+                <i class="bi bi-mic-fill"></i>
+                <span>Đã có voice: {{ basename($card->voice_invite) }}</span>
+            </div>
+        @endif
+    </div>
+</div>
                     <div class="card p-3 mb-3 border-0 bg-light rounded-3">
                         <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-chat-quote me-2"></i>Lời Cảm Ơn</h6>
                         <div class="mb-2">
@@ -622,6 +659,36 @@ function bindImageToIframe(inputId, fieldName) {
         bindImageToIframe('input_groom_avatar', 'groom_avatar');
         bindImageToIframe('input_bride_avatar', 'bride_avatar');
 
+    // Thêm hàm riêng này để bắt file nhạc/voice
+function bindAudioToIframe(inputName, fieldName) {
+    const inputEl = document.querySelector(`input[name="${inputName}"]`);
+    if (inputEl) {
+        inputEl.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('audio/')) {
+                Swal.fire('Sai định dạng', 'Vui lòng chọn file âm thanh (.mp3, .wav)', 'error');
+                return;
+            }
+
+            if (previewFrame && previewFrame.contentWindow) {
+                const audioUrl = URL.createObjectURL(file);
+                previewFrame.contentWindow.postMessage({
+                    type: 'UPDATE_CARD_FIELD',
+                    field: fieldName,
+                    value: audioUrl,
+                    isAudio: true
+                }, '*');
+            }
+        });
+    }
+}
+
+// Kích hoạt cho Nhạc nền & Voice
+bindAudioToIframe('bg_music', 'bg_music');
+bindAudioToIframe('voice_invite', 'voice_invite');
+
         // =========================================================================
         // 3. XỬ LÝ NÚT LƯU THIỆP (CÁCH 1: GIỮ CHÂN KHÁCH VỚI POPUP ĐĂNG NHẬP)
         // =========================================================================
@@ -675,8 +742,8 @@ return response.json();
     // 1. Lấy giá trị của các ô nhập VIP
     // Kiểm tra dữ liệu VIP nhập ở cột trái
 const bankAccount = document.querySelector('input[name="bank_account_number"]')?.value?.trim();
-const musicFile = document.querySelector('input[name="music_file"]')?.files?.length;
-const voiceFile = document.querySelector('input[name="voice_file"]')?.files?.length;
+const musicFile = document.querySelector('input[name="bg_music"]')?.files?.length;
+const voiceFile = document.querySelector('input[name="voice_invite"]')?.files?.length;
 const hasVipData = (bankAccount && bankAccount !== '') || musicFile > 0 || voiceFile > 0;
 
 // Chuẩn bị khung thông báo VIP
@@ -866,6 +933,8 @@ Swal.fire({
         if (btnVipHeader) {
             btnVipHeader.classList.add('d-none');
         }
+        document.querySelectorAll('input[name="bg_music"], input[name="voice_invite"]').forEach(el => el.removeAttribute('disabled'));
+document.querySelectorAll('.vip-lock-overlay').forEach(el => el.remove());
 
         document.querySelectorAll('.alert-warning').forEach(el => el.classList.add('d-none'));
 

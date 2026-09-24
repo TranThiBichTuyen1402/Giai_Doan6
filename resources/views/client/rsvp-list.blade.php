@@ -372,68 +372,92 @@
         </div>
 
         {{-- TAB 3: QUẢN LÝ LỜI CHÚC & VOICE --}}
-        <div class="tab-pane fade" id="wishes-panel">
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-danger">💬 Sổ Lời Chúc & Ghi Âm Giọng Nói từ Khách Mời</h5>
-                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-bold">
-                        Tổng cộng: {{ count($wishes) }} lời chúc
-                    </span>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 20%;">Khách mời</th>
-                                <th style="width: 40%;">Lời chúc</th>
-                                <th style="width: 20%;">Voice ghi âm</th>
-                                <th style="width: 12%;">Thời gian</th>
-                                <th style="width: 8%;" class="text-end">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($wishes as $wish)
-                            <tr>
-                                <td class="fw-bold text-dark">{{ $wish->sender_name }}</td>
-                                <td>{{ $wish->message ?? '—' }}</td>
-                                <td>
-                                    @if(!empty($wish->voice_url))
-                                        <audio controls style="height: 32px; max-width: 220px;">
-                                            <source src="{{ asset($wish->voice_url) }}" type="audio/mpeg">
-                                            Trình duyệt không hỗ trợ phát âm thanh.
-                                        </audio>
-                                    @else
-                                        <span class="badge bg-light text-muted fw-normal">Không có voice</span>
-                                    @endif
-                                </td>
-                                <td class="small text-muted">
-                                    {{ $wish->created_at ? $wish->created_at->format('H:i d/m/Y') : '—' }}
-                                </td>
-                                <td class="text-end">
-                                    <form action="{{ route('wishes.destroy', $wish->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa lời chúc này?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Xóa lời chúc">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
-                                    <i class="bi bi-chat-square-dots fs-3 d-block mb-2"></i>
-                                    Chưa có lời chúc hoặc ghi âm voice nào cho thiệp này.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<div class="tab-pane fade" id="wishes-panel">
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-danger">💬 Sổ Lời Chúc & Ghi Âm Giọng Nói từ Khách Mời</h5>
+            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-bold">
+                Tổng cộng: {{ count($wishes) }} lời chúc
+            </span>
         </div>
 
+        <div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 20%;">Khách mời</th>
+                <th style="width: 40%;">Lời chúc</th>
+                <th style="width: 20%;">Voice ghi âm</th>
+                <th style="width: 12%;">Thời gian</th>
+                <th style="width: 8%;" class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+    {{-- Lọc lấy danh sách RSVP có gửi lời nhắn hoặc có voice --}}
+    @forelse($rsvps->filter(fn($item) => !empty($item->message) || !empty($item->voice_file)) as $wish)
+    <tr>
+        <td class="fw-bold text-dark">{{ $wish->guest_name }}</td>
+        <td>{{ $wish->message ?? '—' }}</td>
+       <td class="align-middle">
+    @if($wish->voice_file)
+        @php
+            $voicePath = $wish->voice_file;
+
+            // Nếu DB đã lưu dạng storage/...
+            if (str_starts_with($voicePath, 'storage/')) {
+                $voiceUrl = asset($voicePath);
+            }
+            // Nếu DB lưu dạng /storage/...
+            elseif (str_starts_with($voicePath, '/storage/')) {
+                $voiceUrl = asset(ltrim($voicePath, '/'));
+            }
+            // Nếu DB chỉ lưu đường dẫn file trong storage/app/public
+            else {
+                $voiceUrl = asset('storage/' . ltrim($voicePath, '/'));
+            }
+        @endphp
+
+        <audio controls preload="metadata" style="height: 36px; max-width: 220px;">
+            <source src="{{ $voiceUrl }}" type="audio/webm">
+            <source src="{{ $voiceUrl }}" type="audio/mpeg">
+            <source src="{{ $voiceUrl }}" type="audio/wav">
+            Trình duyệt không hỗ trợ phát âm thanh.
+        </audio>
+
+        <div class="small text-muted mt-1">
+            🎤 Có ghi âm
+        </div>
+    @else
+        <span class="badge bg-light text-muted fw-normal">
+            Không có voice
+        </span>
+    @endif
+</td>
+        <td class="small text-muted">
+            {{ $wish->created_at ? $wish->created_at->format('H:i d/m/Y') : '—' }}
+        </td>
+        <td class="text-end">
+            <form action="{{ route('wedding_rsvps.destroy', $wish->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa lời chúc này?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-link text-danger p-0 border-0">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </form>
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="5" class="text-center py-4 text-muted">
+            Chưa có lời chúc hoặc ghi âm voice nào cho thiệp này.
+        </td>
+    </tr>
+    @endforelse
+</tbody>
+    </table>
+</div>
+    </div>
+</div>
      {{-- TAB 4: QUẢN LÝ KHO ẢNH CƯỚI --}}
 <div class="tab-pane fade" id="moments-panel">
     {{-- Form Đăng Ảnh --}}

@@ -119,7 +119,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/rsvp/import', [App\Http\Controllers\Client\WeddingRsvpController::class, 'importExcel'])->name('wedding_rsvps.import');
     Route::get('/rsvp/download-sample', [WeddingRsvpController::class, 'downloadSampleExcel'])->name('wedding_rsvps.download_sample');
-}); // <-- ĐÃ THÊM DẤU ĐÓNG NGOẶC CÒN THIẾU Ở ĐÂY
+
+    // mục tài khoản của dashboard cô dâu chú rể
+    Route::get('/profile', [App\Http\Controllers\Client\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile/update', [App\Http\Controllers\Client\ProfileController::class, 'updateInfo'])->name('profile.update');
+    Route::put('/profile/change-password', [App\Http\Controllers\Client\ProfileController::class, 'changePassword'])->name('profile.password');
+    }); // <-- ĐÃ THÊM DẤU ĐÓNG NGOẶC CÒN THIẾU Ở ĐÂY
 
 
 /*
@@ -295,9 +300,11 @@ Route::get('/chon-mau-thiep', [WeddingCardController::class, 'chooseTemplate'])
     ->name('card.choose');
 
 Route::post(
-    '/wedding-invitation/{slug}/rsvp',
-    [WeddingRsvpController::class, 'store']
-)->name('wedding.rsvp');
+    '/wedding-invitation/{slug}/rsvp',[WeddingRsvpController::class, 'store'])
+    ->name('wedding.rsvp');
+
+// Route nhận Lời chúc bằng giọng nói từ giao diện Thiệp Public
+Route::post('/wedding-invitation/{slug}/voice-wish', [WeddingRsvpController::class, 'storeVoiceWish'])->name('wedding.voiceWish');
 
 // ROUTE DÀNH CHO KHÁCH TRA CỨU
 Route::get('/search-table', [TableController::class, 'findSeat'])->name('rsvp.searchTable');

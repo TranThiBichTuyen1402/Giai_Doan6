@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('guest_count')->default(1);
             $table->foreignId('table_id')->nullable();
             $table->text('message')->nullable();
+            $table->string('voice_file')->nullable();
             $table->timestamps();
         });
     }

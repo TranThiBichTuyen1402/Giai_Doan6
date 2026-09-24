@@ -234,14 +234,6 @@
     document.body.classList.add('editor-mode');
 </script>
 @endif
-{{-- ĐĨA NHẠC --}}
-@if(!empty($card->voice_invite))
-<div class="floating-vinyl-player" onclick="toggleAudio('wedding-audio')">
-    <div class="vinyl-disc" id="vinyl-icon"></div>
-    <span class="small fw-bold text-dark pe-1" style="font-size: 12px;">Phát Nhạc</span>
-    <audio id="wedding-audio" src="{{ asset($card->voice_invite) }}" loop></audio>
-</div>
-@endif
 
 <div class="card-container">
     
@@ -319,6 +311,17 @@
         <div class="small text-sub mb-1" data-field="lunar_date">{{ $card->lunar_date ?? 'Tức Ngày 19 Tháng 10 Năm Bính Ngọ' }}</div>
         <div class="fw-bold mb-3 text-dark">Vào lúc <span data-field="wedding_time">{{ $card->wedding_time ?? '11:30 AM' }}</span></div>
 
+        <!-- lời mời  -->
+         @if(!empty($card->voice_invite))
+            <div class="my-3 text-center">
+                <button type="button" 
+                        class="btn rounded-pill px-4 py-2 btn-sm fw-bold shadow-sm" 
+                        style="background: #fef3c7; color: #92400e; border: 1px solid #f59e0b;" 
+                        onclick="toggleAudio('wedding-audio')">
+                    <i class="bi bi-play-circle-fill me-1" style="color: #d97706;"></i> Phát Lời Mời Từ Cặp Đôi
+                </button>
+            </div>
+        @endif
         {{-- Đếm ngược --}}
         <div class="countdown">
             <div class="item"><span id="days">00</span><small>Ngày</small></div>
@@ -326,7 +329,7 @@
             <div class="item"><span id="minutes">00</span><small>Phút</small></div>
             <div class="item"><span id="seconds">00</span><small>Giây</small></div>
         </div>
-
+    
         <p class="fw-bold mb-3 mt-4 text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span data-field="wedding_location">{{ $card->wedding_location ?? 'GEM Center, Quận 1, TP.HCM' }}</span></p>
 
         <div class="d-flex justify-content-center gap-2 mb-3">
@@ -542,6 +545,7 @@
     </div>
 </div>
 
+<!-- MODAL GỬI LỜI CHÚC MỪNG (ĐÃ SỬA LỖI) -->
 <div class="modal fade" id="wishModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 bg-white text-dark shadow-lg">
@@ -552,26 +556,33 @@
                         <label class="form-label small fw-bold">Tên của bạn</label>
                         <input type="text" id="wish_name" class="form-control bg-light border-0 rounded-pill px-3" required placeholder="Nhập tên của bạn">
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Lời chúc mừng</label>
-                        <textarea id="wish_text" class="form-control bg-light border-0 rounded-3 px-3" rows="3" required placeholder="Nhập lời chúc tốt đẹp nhất..."></textarea>
+                        <label class="form-label small fw-bold">Lời chúc mừng (dạng chữ)</label>
+                        {{-- BỎ required ĐỂ KHÔNG BẮT BUỘC NHẬP NẾU ĐÃ GHI ÂM --}}
+                        <textarea id="wish_text" class="form-control bg-light border-0 rounded-3 px-3" rows="3" placeholder="Nhập lời chúc tốt đẹp nhất..."></textarea>
                     </div>
-                     <div class="mb-3">
-<label class="form-label small fw-bold"><i class="bi bi-mic-fill text-warning me-1"></i> Gửi kèm Giọng nói / Lời chúc âm thanh</label>
- <input type="file" id="wish_voice" accept="audio/*" class="form-control bg-secondary text-light border-0 rounded-pill px-3">
- <small class="text-sub d-block mt-1" style="font-size: 0.75rem;">(Chấp nhận file ghi âm MP3, WAV, M4A...)</small>
-</div>
-<!-- 💥 THAY THẾ Ô CHỌN FILE CŨ BẰNG KHỐI GHI ÂM NÀY -->
-<div class="mb-3">
-    <label class="form-label small fw-bold"><i class="bi bi-mic-fill text-warning me-1"></i> Gửi kèm Giọng nói trực tiếp</label>
-    
-    <div class="d-flex align-items-center gap-2">
-        <button type="button" id="btnRecord" class="btn btn-outline-warning btn-sm rounded-pill px-3">
-            <i class="bi bi-record-circle me-1"></i> Bấm để ghi âm
-        </button>
-        <span id="recordTimer" class="small text-danger fw-bold d-none">00:00</span>
-    </div>
-                    <button type="submit" class="btn btn-rose-gold w-100 rounded-pill py-2 fw-bold">GỬI LỜI CHÚC</button>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="bi bi-file-earmark-music text-warning me-1"></i> Tải file âm thanh có sẵn</label>
+                        <input type="file" id="wish_voice_file" accept="audio/*" class="form-control bg-light border-0 rounded-pill px-3">
+                        <small class="text-sub d-block mt-1" style="font-size: 0.75rem;">(Chấp nhận file MP3, WAV, M4A...)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold"><i class="bi bi-mic-fill text-danger me-1"></i> Hoặc ghi âm trực tiếp tại đây:</label>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <button type="button" id="btnRecord" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                                🎤 Bấm để ghi âm
+                            </button>
+                            <span id="recordTimer" class="small text-danger fw-bold d-none">00:00</span>
+                        </div>
+                        <audio id="audioPreview" controls class="w-100 mt-2 d-none"></audio>
+                    </div>
+
+                    <button type="submit" id="btnSubmitWish" class="btn btn-rose-gold w-100 rounded-pill py-2.5 fw-bold mt-2">
+                        GỬI LỜI CHÚC
+                    </button>
                 </form>
             </div>
         </div>
